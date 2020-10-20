@@ -8,7 +8,7 @@ import java.util.*;
  */
 public class Continent {
     private final String name, id;
-    private final Set<Territory> territories;
+    private final List<Territory> territories;
 
     /**
      * Constructor for class Continent. Initializes the object with a name and empty territory list.
@@ -18,7 +18,7 @@ public class Continent {
     public Continent(String name, String id) {
         this.name = name;
         this.id = id;
-        this.territories = new HashSet<>();
+        this.territories = new ArrayList<>();
     }
 
     /**
@@ -30,7 +30,7 @@ public class Continent {
     public Continent(String name, String id, Collection<Territory> territories) {
         this.name = name;
         this.id = id;
-        this.territories = new HashSet<>(territories);
+        this.territories = new ArrayList<>(territories);
     }
 
     /**
@@ -70,12 +70,11 @@ public class Continent {
      * @return The territory associated with the ID
      */
     public Optional<Territory> getTerritoryById(int id) {
-        for (Territory territory: territories) {
-            if (territory.getID() == id) {
-                return Optional.of(territory);
-            }
+        try {
+            return Optional.of(territories.get(id));
+        } catch (IndexOutOfBoundsException e) {
+            return Optional.empty();
         }
-        return Optional.empty();
     }
 
     /**

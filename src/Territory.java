@@ -10,18 +10,15 @@ public class Territory {
 
     private Player owner; // owner of the country
     private int numArmies = 0; //amount of armies contained in the country
-    private final String ID; //id to identify country by
     private final String name; //name to identify country by
     private Set<String> setOfAdjacents; //set of ids that belong to other countries adjacent to this one
 
     /**
      * constructor for territory.
-     * @param id string to used identify territories
      * @param name longer string used to identify territories
      * @param setOfAdjacents a set containing the ids of adjacent territories
      */
-    public Territory(String id, String name, Set<String> setOfAdjacents) {
-        ID = id;
+    public Territory(String name, Set<String> setOfAdjacents) {
         this.name = name;
         this.setOfAdjacents = setOfAdjacents;
     }
@@ -79,11 +76,6 @@ public class Territory {
         return owner;
     }
     /**
-     * a method to read the id of the territory
-     * @return a string representation of the ID
-     */
-    public String getID() { return ID; }
-    /**
      * a method to read the name of the territory
      * @return a string representation of the name
      */
@@ -97,7 +89,7 @@ public class Territory {
      * @param toCheck String that setOfAdjacents is checked for to find a match
      * @return a boolean representing wether a match was found or not.
      */
-    public boolean setCheck (String toCheck){
+    public boolean isAdjacentTo(String toCheck){
         if (setOfAdjacents.isEmpty()){
             return false;
         }
