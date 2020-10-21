@@ -9,8 +9,8 @@ public enum CommandWord
     // A value for each command word along with its
     // corresponding user interface string.
     PLAY("play"), ATTACK("attack"), MOVE("move"),
-    SKIP("skip"), CANCEL("cancel"), MAP("map"),
-    UNKNOWN("?"), QUIT("quit");
+    DONE("done"), CANCEL("cancel"), HELP("help"),
+    MAP("map"), UNKNOWN("?"), QUIT("quit");
 
     // The command string.
     private String commandString;

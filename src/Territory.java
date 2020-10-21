@@ -1,8 +1,8 @@
 import java.util.*;
 
-/** the class Territory represents a territory in the risk game identifiable by a String ID and Name that can be read.
- *  The Territory can have armies represented by integers be removed,added or read. Lastly it has a set containing all
- *  the ids of adjacent territories.
+/** the class Territory represents a territory in the risk game identifiable by a Name and ID that can be read.
+ *  The Territory can have armies represented by integers be removed,added or read. Lastly it has a list containing all
+ *  adjacent territories.
  *
  * @author Jacob Schmidt
  */
@@ -11,16 +11,19 @@ public class Territory {
     private Player owner; // owner of the country
     private int numArmies = 0; //amount of armies contained in the country
     private final String name; //name to identify country by
-    private Set<String> setOfAdjacents; //set of ids that belong to other countries adjacent to this one
+    private final String id; //id to identify country by
+    private List<String> listOfAdjacents; //List of countries that belong to other countries adjacent to this one
 
     /**
      * constructor for territory.
      * @param name longer string used to identify territories
-     * @param setOfAdjacents a set containing the ids of adjacent territories
+     * @param id string to used identify territories
+     * @param listOfAdjacents a list containing the ids of adjacent territories
      */
-    public Territory(String name, Set<String> setOfAdjacents) {
+    public Territory(String name, String id, List<String> listOfAdjacents) {
         this.name = name;
-        this.setOfAdjacents = setOfAdjacents;
+        this.id = id;
+        this.listOfAdjacents = listOfAdjacents;
     }
 
     /**
@@ -69,12 +72,19 @@ public class Territory {
     }
 
     /**
+     * a method to read the id of the territory
+     * @return a string representation of the ID
+     */
+    public String getID() { return id; }
+
+    /**
      * a method to read who the owner is
      * @return a Player, owner
      */
     public Player getOwner() {
         return owner;
     }
+
     /**
      * a method to read the name of the territory
      * @return a string representation of the name
@@ -85,15 +95,15 @@ public class Territory {
 
     /**
      * a method that checks to see if a String toCheck is contained within the
-     * setOFAdjacents set.
-     * @param toCheck String that setOfAdjacents is checked for to find a match
+     * listOFAdjacents list.
+     * @param toCheck String that listOfAdjacents is checked for to find a match
      * @return a boolean representing wether a match was found or not.
      */
     public boolean isAdjacentTo(String toCheck){
-        if (setOfAdjacents.isEmpty()){
+        if (listOfAdjacents.isEmpty()){
             return false;
         }
-        for (String item : setOfAdjacents){
+        for (String item : listOfAdjacents){
             if (item.equals(toCheck)){
                 return true;
             }
