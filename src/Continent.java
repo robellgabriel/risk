@@ -10,15 +10,18 @@ public class Continent {
     private final String name, id;
     private final List<Territory> territories;
 
+    public final int BONUS_ARMIES;
+
     /**
      * Constructor for class Continent. Initializes the object with a name and empty territory list.
      * @param name The continent's name
      * @param id The continent's ID
      */
-    public Continent(String name, String id) {
+    public Continent(String name, String id, int bonusArmies) {
         this.name = name;
         this.id = id;
         this.territories = new ArrayList<>();
+        this.BONUS_ARMIES = bonusArmies;
     }
 
     /**
@@ -27,10 +30,11 @@ public class Continent {
      * @param id The continent's ID
      * @param territories The collection of continents to be used to initialize the object
      */
-    public Continent(String name, String id, Collection<Territory> territories) {
+    public Continent(String name, String id, Collection<Territory> territories, int bonusArmies) {
         this.name = name;
         this.id = id;
         this.territories = new ArrayList<>(territories);
+        this.BONUS_ARMIES = bonusArmies;
     }
 
     /**

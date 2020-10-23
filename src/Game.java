@@ -76,11 +76,63 @@ public class Game {
         return false;
     }
 
-    public void placePhase(Player player) {
+    /**
+     * Calculates the number of armies the player will be getting then calls a method that allows
+     * the player to distribute said number of armies throughout his owned territories
+     * @param currPlayer the player whos turn it is
+     */
+    public void placePhase(Player currPlayer) {
+        int armiesRemaining = 3 + (currPlayer.getAllLandOwned().size()-9)/3;
+        for (Continent continent : continents.values()) {
+            Optional<Player> conqueror = continent.getConqueror();
+            if (conqueror.isPresent() && conqueror.get().equals(currPlayer)) armiesRemaining += continent.BONUS_ARMIES;
+        }
 
+        System.out.println("Place phase initiated for " + currPlayer.getName());
+        while(armiesRemaining > 0){
+            System.out.println("Please chose a Territory to place armies into");
+            Territory toPlace = promptForOwnedTerritory(currPlayer,1);
+            if(toPlace == null) {
+                System.out.println("You cant cancel place phase");
+                continue;
+            }
+            System.out.println("Please chose a The number of armies you would like to place");
+            int i = promptForInt(armiesRemaining);
+            if(i < 0) {
+                System.out.println("You cant cancel place phase");
+                continue;
+            }
+            toPlace.addArmy(i,armiesRemaining);
+            armiesRemaining -= i;
+            System.out.println("Congrats you have placed " + i + "armies into " + toPlace.getName());
+
+        }
+        System.out.println("Place phase is over.");
     }
 
-    public boolean movePhase(Player player) {
+    /**
+     * lets the player move armies from one territory to another as long as they are adjacent to eachother and
+     * the number of armies in territoires allow it. also allows the player to call the map function or cancel
+     * the move phase
+     * @param currPlayer player whos turn it currently is
+     * @return a boolean value that is false if movePhase is canceled or true if movePhase is successful
+     */
+    public boolean movePhase(Player currPlayer) {
+        System.out.println("Move phase initiated for " + currPlayer.getName());
+        System.out.println("Please enter a territory's ID that u wish to move armies from");
+        Territory toRemove = promptForOwnedTerritory(currPlayer,2);
+        if(toRemove == null) return false;
+        System.out.println("Please enter a territory's ID that u wish to move armies To");
+        Territory toPlace = promptForAdjacentTerritory(toRemove);
+        if(toRemove == null) return false;
+        System.out.println("Please enter the number of armies you wish to move");
+        int i = promptForInt(toRemove.getNumArmies()-1);
+        if (i < 0) return false;
+
+        toRemove.removeArmy(i);
+        toPlace.addArmy(i,i);
+        System.out.println("You have moved " + i + " armies from" + toRemove.getName() + " to " + toPlace.getName());
+        System.out.println("Move phase is over");
         return true;
     }
 
@@ -91,7 +143,7 @@ public class Game {
     public void attack(Player activePlayer) {
         // Returning null corresponds to player entering "cancel"
         System.out.println("You have chosen to attack! Enter the ID of the territory you wish to attack from:");
-        Territory attacking = promptForOwnedTerritory(activePlayer);
+        Territory attacking = promptForOwnedTerritory(activePlayer,2);
         if (attacking == null) return;
 
         System.out.println("Select the territory you wish to attack:");
@@ -161,7 +213,7 @@ public class Game {
      * @param owner Will assert this player as the owner of the territory
      * @return The selected territory, or null if the player entered "cancel"
      */
-    private Territory promptForOwnedTerritory(Player owner) {
+    private Territory promptForOwnedTerritory(Player owner, int lim) {
         Scanner sc = new Scanner(System.in);
         while (true) {
             String territoryID = sc.next().toUpperCase();
@@ -181,12 +233,43 @@ public class Game {
                 continue;
             }
 
-            if (territory.getNumArmies() < 2) {
-                System.out.println("This territory does not have enough units to attack. Please enter a new one:");
+            if (territory.getNumArmies() < lim) {
+                System.out.println("This territory does not have enough units. Please enter a new one:");
                 continue;
             }
 
             return territory;
+        }
+    }
+
+    /**
+     * promts player for an integer, will check if input is a command, an integer or a invalid input
+     * will loop until valid input is entered
+     * @param limit the entered integer must be smaller that the integer limit
+     * @return returns a valid integer input by the player
+     */
+    private int promptForInt(int limit) {
+        Scanner sc = new Scanner(System.in);
+        int temp = 0;
+        while (true) {
+            String testInt = sc.next();
+            CommandWord command = checkForCommand(testInt);
+            if (command == CommandWord.CANCEL) return -1;
+            if (command == CommandWord.MAP) continue;
+            // Known command resets prompt
+            if (command != CommandWord.UNKNOWN) continue;
+            try{
+                temp = Integer.parseInt(testInt);
+            }catch (NumberFormatException e){
+                System.out.println("This is not a number or a command.");
+                continue;}
+
+            if (temp < limit && temp > 0) { return temp;}
+            else {
+                System.out.println("This is not a valid number");
+            }
+
+
         }
     }
 
@@ -247,24 +330,12 @@ public class Game {
     private int promptForDice(Territory territory, boolean isAttacking) {
         System.out.print((isAttacking) ? "Attacker: " : "Defender: ");
         int maxDice = Math.min(territory.getNumArmies() - (isAttacking ? 1 : 0), isAttacking ? 3 : 2);
-        Scanner sc = new Scanner(System.in);
         while (true) {
             System.out.println("Select the amount of dice you wish to roll:");
-            String input = sc.next();
+            int numDice = promptForInt(maxDice);
 
-            if (!isNumeric(input)) {
-                System.out.print("This is not a valid number! ");
-                continue;
-            }
-
-            int numDice = Integer.parseInt(input);
-            if (numDice > maxDice) {
-                System.out.print("You selected too many dice! ");
-                continue;
-            }
-
-            if (numDice == 0) {
-                System.out.print("You must roll at least one die. ");
+            if (numDice < 0){
+                System.out.println("You cannot cancel during a dice roll.");
                 continue;
             }
 
