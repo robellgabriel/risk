@@ -526,7 +526,6 @@ public class Game {
                 territory.addArmy(armyList2.pop(), 100);
             }
         }
-        printMap();
     }
 
     /**
