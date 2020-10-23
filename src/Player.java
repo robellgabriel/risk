@@ -37,6 +37,15 @@ public class Player {
     }
 
     /**
+     * Remove a territory from the player's owned lands
+     * @param ter The territory to remove
+     * @return True if successful, false otherwise
+     */
+    public boolean removeTerritory(Territory ter) {
+        return ownedlands.remove(ter);
+    }
+
+    /**
      * Return the list of lands owned by the player so far in the game
      * @return the set that contained all the land that the player owned at the moment
      */

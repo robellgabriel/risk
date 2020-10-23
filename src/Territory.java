@@ -12,18 +12,25 @@ public class Territory {
     private int numArmies = 0; //amount of armies contained in the country
     private final String name; //name to identify country by
     private final String id; //id to identify country by
-    private List<String> listOfAdjacents; //List of countries that belong to other countries adjacent to this one
+    private List<Territory> listOfAdjacents; //List of countries that belong to other countries adjacent to this one
 
     /**
      * constructor for territory.
      * @param name longer string used to identify territories
      * @param id string to used identify territories
-     * @param listOfAdjacents a list containing the ids of adjacent territories
      */
-    public Territory(String name, String id, List<String> listOfAdjacents) {
+    public Territory(String name, String id) {
         this.name = name;
         this.id = id;
-        this.listOfAdjacents = listOfAdjacents;
+        this.listOfAdjacents = new ArrayList<>();
+    }
+
+    /**
+     * Add a new territory to the list of adjacents
+     * @param adjacent The territory to add to the adjacency list
+     */
+    public void addAdjacent(Territory adjacent) {
+        this.listOfAdjacents.add(adjacent);
     }
 
     /**
@@ -53,6 +60,14 @@ public class Territory {
         }
         numArmies -= numRemove;
         return true;
+    }
+
+    /**
+     * Set the number of armies in the territory to a different value
+     * @param newArmies The new amount of armies
+     */
+    public void setNumArmies(int newArmies) {
+        this.numArmies = newArmies;
     }
 
     /**
@@ -99,11 +114,11 @@ public class Territory {
      * @param toCheck String that listOfAdjacents is checked for to find a match
      * @return a boolean representing wether a match was found or not.
      */
-    public boolean isAdjacentTo(String toCheck){
+    public boolean isAdjacentTo(Territory toCheck){
         if (listOfAdjacents.isEmpty()){
             return false;
         }
-        for (String item : listOfAdjacents){
+        for (Territory item : listOfAdjacents){
             if (item.equals(toCheck)){
                 return true;
             }
