@@ -12,24 +12,24 @@ public class Territory {
     private int numArmies = 0; //amount of armies contained in the country
     private final String name; //name to identify country by
     private final String id; //id to identify country by
-    private List<Territory> listOfAdjacents; //List of countries that belong to other countries adjacent to this one
+    private List<String> listOfAdjacents; //List of countries that belong to other countries adjacent to this one
 
     /**
      * constructor for territory.
      * @param name longer string used to identify territories
      * @param id string to used identify territories
      */
-    public Territory(String name, String id) {
+    public Territory(String name, String id, List<String> listOfAdjacents) {
         this.name = name;
         this.id = id;
-        this.listOfAdjacents = new ArrayList<>();
+        this.listOfAdjacents = listOfAdjacents;
     }
 
     /**
      * Add a new territory to the list of adjacents
      * @param adjacent The territory to add to the adjacency list
      */
-    public void addAdjacent(Territory adjacent) {
+    public void addAdjacent(String adjacent) {
         this.listOfAdjacents.add(adjacent);
     }
 
@@ -111,22 +111,23 @@ public class Territory {
     /**
      * a method that checks to see if a String toCheck is contained within the
      * listOFAdjacents list.
-     * @param toCheck String that listOfAdjacents is checked for to find a match
+     * @param toCheck Territory whose ID is checked against listOfAdjacents
      * @return a boolean representing wether a match was found or not.
      */
-    public boolean isAdjacentTo(Territory toCheck){
+    public boolean isAdjacentTo(String toCheck){
         if (listOfAdjacents.isEmpty()){
             return false;
         }
-        for (Territory item : listOfAdjacents){
-            if (item.equals(toCheck)){
-                return true;
-            }
-        }
-        return false;
+        return listOfAdjacents.contains(toCheck);
     }
 
-
-
+    @Override
+    public String toString() {
+        if (numArmies==1){
+            return name + " is owned by " + owner.getName() + " with " + numArmies + " army";
+        }else {
+            return name + " is owned by " + owner.getName() + " with " + numArmies + " armies";
+        }
+    }
 }
 

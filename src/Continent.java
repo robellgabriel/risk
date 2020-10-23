@@ -73,13 +73,19 @@ public class Continent {
      * @param id The requested territory's ID
      * @return The territory associated with the ID
      */
-    public Optional<Territory> getTerritoryById(String id) {
-        for (Territory territory: territories) {
-            if (territory.getID().equals(id)) {
-                return Optional.of(territory);
-            }
+    public Optional<Territory> getTerritoryById(int id) {
+        try {
+            return Optional.of(territories.get(id));
+        } catch (IndexOutOfBoundsException e) {
+            return Optional.empty();
         }
-        return Optional.empty();
+    }
+    /**
+     * Get the amount of territories in continent
+     * @return an int that is the size of territories list
+     */
+    public int getTerritoriesSize(){
+        return territories.size();
     }
 
     /**

@@ -17,6 +17,7 @@ public class Player {
      */
     public Player(String name) {
         this.name = name;
+        ownedlands = new LinkedHashSet<>();
     }
 
     /**
@@ -49,7 +50,7 @@ public class Player {
      * Return the list of lands owned by the player so far in the game
      * @return the set that contained all the land that the player owned at the moment
      */
-    public Set getAllLandOwned(){
+    public Set<Territory> getAllLandOwned(){
         return ownedlands;
     }
 }
