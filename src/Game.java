@@ -4,7 +4,6 @@ public class Game {
     private final List<Player> activePlayers;
     private final Map<String, Continent> continents;
     private final Parser parser;
-
     public Game() {
         activePlayers = new LinkedList<>();
         continents = new HashMap<>();
@@ -16,16 +15,73 @@ public class Game {
         game.play();
     }
 
+    /**
+     *This is the main body of the game, where the players will play the game
+     *
+     * Author @Phuc La
+     */
     public void play() {
+        //Initializer to get number of players, player's name, distribution of territory and armies
+        initialize();
+        Player currentplayer = activePlayers.get(0);
+        //main game loop where the game happens
+        System.out.println("Here are the commands for the game: ");
+        parser.showCommands();
+        while(activePlayers.size()>1){
+            boolean finished = false;
+            System.out.println(currentplayer.getName()+"'s turn: ");
+            placePhase(currentplayer);
+            while(!finished){
+                Command command = parser.getCommand();
+                finished = processCommand(command, currentplayer);
+            }
+            currentplayer = activePlayers.get((activePlayers.indexOf(currentplayer) +1 ) % activePlayers.size());
+        }
+        System.out.println("Congratulations "+currentplayer+". You are the winner!!!");
+    }
+
+    /**
+     * This methods is called during the player's turn to process their command after the
+     * first phase of the game is done
+     * @param command is the command that decide the action of the player in the game after phase 1
+     * @param currplayer is the current player that is playing in this turn
+     * @return false if the player is not done with their turn, true other wise
+     *
+     * Author @Phuc La
+     */
+    private boolean processCommand(Command command, Player currplayer){
+        if(command.isUnknown()){
+            System.out.println("Not valid command!");
+        }
+        String commandWord = command.getCommandWord().toString();
+        if(commandWord.equals("help")){
+            System.out.println("Your command words are: ");
+            printHelp();
+        }else if (commandWord.equals("attack")){
+            System.out.println("You are in attacking phase: ");
+            attack(currplayer);
+        }else if(commandWord.equals("move")){
+            System.out.println("You are in moving phase.");
+            if(movePhase(currplayer)){
+                System.out.println("You finished moving, moving on to next player.");
+                return true;
+            }
+        }else if(commandWord.equals("done")){
+            System.out.println("Your turn is now finished. Move on to the next player");
+            return true;
+        }else if(commandWord.equals("map")){
+            System.out.println("This is the map of the world: ");
+            printMap();
+        }
+        return false;
+    }
+
+    public void placePhase(Player player) {
 
     }
 
-    public void placePhase() {
-
-    }
-
-    public void movePhase() {
-
+    public boolean movePhase(Player player) {
+        return true;
     }
 
     /**
