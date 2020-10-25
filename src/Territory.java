@@ -18,6 +18,7 @@ public class Territory {
      * constructor for territory.
      * @param name longer string used to identify territories
      * @param id string to used identify territories
+     * @param listOfAdjacents The list of adjacent territory IDs
      */
     public Territory(String name, String id, List<String> listOfAdjacents) {
         this.name = name;
