@@ -32,7 +32,7 @@ public class CommandWords
     /**
      * Find the CommandWord associated with a command word.
      * @param commandWord The word to look up.
-     * @return The CommandWord correspondng to commandWord, or UNKNOWN
+     * @return The CommandWord corresponding to commandWord, or UNKNOWN
      *         if it is not a valid command word.
      */
     public CommandWord getCommandWord(String commandWord)

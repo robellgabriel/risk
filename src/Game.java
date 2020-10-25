@@ -1,7 +1,11 @@
 import java.util.*;
 
-import static java.lang.String.valueOf;
-
+/**
+ * The main game class for the game Risk. This manages all operations including game initialization,
+ * player turns, and command handling. The game ends when there is one player left standing.
+ *
+ * @author Nicolas Tuttle, Phuc La, Robell Gabriel, Jacob Schmidt
+ */
 public class Game {
     private final List<Player> activePlayers;
     private final Map<String, Continent> continents;
@@ -20,7 +24,7 @@ public class Game {
     /**
      *This is the main body of the game, where the players will play the game
      *
-     * Author @Phuc La
+     * @author Phuc La
      */
     public void play() {
         //Initializer to get number of players, player's name, distribution of territory and armies
@@ -31,7 +35,7 @@ public class Game {
         parser.showCommands();
         while(activePlayers.size()>1){
             boolean finished = false;
-            System.out.println(currentplayer.getName()+"'s turn: ");
+            System.out.println("\n"+currentplayer.getName()+"'s turn: ");
             placePhase(currentplayer);
             while(!finished){
                 Command command = parser.getCommand();
@@ -39,7 +43,7 @@ public class Game {
             }
             currentplayer = activePlayers.get((activePlayers.indexOf(currentplayer) +1 ) % activePlayers.size());
         }
-        System.out.println("Congratulations "+currentplayer+". You are the winner!!!");
+        System.out.println("Congratulations "+currentplayer.getName()+". You are the winner!!!");
     }
 
     /**
@@ -49,31 +53,39 @@ public class Game {
      * @param currplayer is the current player that is playing in this turn
      * @return false if the player is not done with their turn, true other wise
      *
-     * Author @Phuc La
+     * @author Phuc La
      */
     private boolean processCommand(Command command, Player currplayer){
         if(command.isUnknown()){
-            System.out.println("Not valid command!");
+            System.out.println("Not a valid command!");
         }
         String commandWord = command.getCommandWord().toString();
-        if(commandWord.equals("help")){
-            System.out.println("Your command words are: ");
-            printHelp();
-        }else if (commandWord.equals("attack")){
-            System.out.println("You are in attacking phase: ");
-            attack(currplayer);
-        }else if(commandWord.equals("move")){
-            System.out.println("You are in moving phase.");
-            if(movePhase(currplayer)){
-                System.out.println("You finished moving, moving on to next player.");
+        switch (commandWord) {
+            case "help":
+                System.out.println("Your command words are: ");
+                printHelp();
+                break;
+            case "attack":
+                System.out.println("You are in attacking phase: ");
+                attack(currplayer);
+                break;
+            case "move":
+                System.out.println("You are in moving phase.");
+                if (movePhase(currplayer)) {
+                    System.out.println("You finished moving, moving on to next player.");
+                    return true;
+                }
+                break;
+            case "done":
+                System.out.println("Your turn is now finished. Move on to the next player");
                 return true;
-            }
-        }else if(commandWord.equals("done")){
-            System.out.println("Your turn is now finished. Move on to the next player");
-            return true;
-        }else if(commandWord.equals("map")){
-            System.out.println("This is the map of the world: ");
-            printMap();
+            case "map":
+                System.out.println("This is the map of the world: ");
+                printMap();
+                break;
+            case "quit":
+                System.out.println("Thanks for playing!");
+                System.exit(0);
         }
         return false;
     }
@@ -81,7 +93,8 @@ public class Game {
     /**
      * Calculates the number of armies the player will be getting then calls a method that allows
      * the player to distribute said number of armies throughout his owned territories
-     * @param currPlayer the player whos turn it is
+     * @param currPlayer the player who's turn it is
+     * @author Jacob Schmidt
      */
     public void placePhase(Player currPlayer) {
         int armiesRemaining = 3 + (currPlayer.getAllLandOwned().size()-9)/3;
@@ -91,14 +104,15 @@ public class Game {
         }
 
         System.out.println("Place phase initiated for " + currPlayer.getName());
+        System.out.println("You have been given " +armiesRemaining+ " armies");
         while(armiesRemaining > 0){
-            System.out.println("Please chose a Territory to place armies into");
+            System.out.println("Please enter the ID of the Territory you wish to place armies into. There are " +armiesRemaining+ " left to place");
             Territory toPlace = promptForOwnedTerritory(currPlayer,1);
             if(toPlace == null) {
                 System.out.println("You cant cancel place phase");
                 continue;
             }
-            System.out.println("Please chose a The number of armies you would like to place");
+            System.out.println("Please choose the number of armies you would like to place");
             int i = promptForInt(armiesRemaining);
             if(i < 0) {
                 System.out.println("You cant cancel place phase");
@@ -106,34 +120,47 @@ public class Game {
             }
             toPlace.addArmy(i,armiesRemaining);
             armiesRemaining -= i;
-            System.out.println("Congrats you have placed " + i + "armies into " + toPlace.getName());
-
+            System.out.println("Congrats you have placed " + i + " armies into " + toPlace.getName());
         }
         System.out.println("Place phase is over.");
+        System.out.println("Here are your commands\n");
+        printHelp();
+        System.out.println("\nIf you change your mind and would like to go back in attack/move. \nUse the cancel command before choosing the territories to attack/move");
+        System.out.println("\nIf you would like to end your turn early, use the done command.");
     }
 
     /**
-     * lets the player move armies from one territory to another as long as they are adjacent to eachother and
-     * the number of armies in territoires allow it. also allows the player to call the map function or cancel
+     * lets the player move armies from one territory to another as long as they are adjacent to each other and
+     * the number of armies in territories allow it. also allows the player to call the map function or cancel
      * the move phase
-     * @param currPlayer player whos turn it currently is
+     * @param currPlayer player who's turn it currently is
      * @return a boolean value that is false if movePhase is canceled or true if movePhase is successful
+     * @author Jacob Schmidt
      */
     public boolean movePhase(Player currPlayer) {
         System.out.println("Move phase initiated for " + currPlayer.getName());
         System.out.println("Please enter a territory's ID that u wish to move armies from");
         Territory toRemove = promptForOwnedTerritory(currPlayer,2);
-        if(toRemove == null) return false;
+        if(toRemove == null){
+            System.out.println("Your commands:");
+            printHelp();
+            return false;
+        }
+        System.out.println("Here are all adjacent territories to " +toRemove.getName()+ " by ID: "+toRemove.getAdjacentList());
         System.out.println("Please enter a territory's ID that u wish to move armies To");
         Territory toPlace = promptForAdjacentTerritory(toRemove);
-        if(toRemove == null) return false;
+        if(toPlace == null){
+            System.out.println("Your commands:");
+            printHelp();
+            return false;
+        }
         System.out.println("Please enter the number of armies you wish to move");
         int i = promptForInt(toRemove.getNumArmies()-1);
         if (i < 0) return false;
 
         toRemove.removeArmy(i);
         toPlace.addArmy(i,i);
-        System.out.println("You have moved " + i + " armies from" + toRemove.getName() + " to " + toPlace.getName());
+        System.out.println("You have moved " + i + " armies from " + toRemove.getName() + " to " + toPlace.getName());
         System.out.println("Move phase is over");
         return true;
     }
@@ -141,16 +168,26 @@ public class Game {
     /**
      * Initiates an attack. Contains all the logic to select an attacking territory and handle results of the attack
      * @param activePlayer The current player
+     * @author Nicolas Tuttle
      */
     public void attack(Player activePlayer) {
         // Returning null corresponds to player entering "cancel"
         System.out.println("You have chosen to attack! Enter the ID of the territory you wish to attack from:");
         Territory attacking = promptForOwnedTerritory(activePlayer,2);
-        if (attacking == null) return;
+        if (attacking == null) {
+            System.out.println("Your commands:");
+            printHelp();
+            return;
+        }
 
+        System.out.println("Here are all adjacent territories to " +attacking.getName()+ " by ID: "+attacking.getAdjacentList());
         System.out.println("Select the territory you wish to attack:");
         Territory defending = promptForAdjacentTerritory(attacking);
-        if (defending == null) return;
+        if (defending == null) {
+            System.out.println("Your commands:");
+            printHelp();
+            return;
+        }
         while (defending.getOwner() == attacking.getOwner()) {
             System.out.println("You cannot attack a territory you own! Select a new territory:");
             defending = promptForAdjacentTerritory(attacking);
@@ -188,6 +225,7 @@ public class Game {
 
             System.out.println("The attacking territory lost " + attackLosses + " unit(s)! It has " + attacking.getNumArmies() + " unit(s) left.");
             System.out.println("The defending territory lost " + defendLosses + " unit(s)! It has " + defending.getNumArmies() + " unit(s) left.");
+
         } else {
             // Territory conquered! Transfer ownership and move one unit over to defend
             System.out.println("The defending territory lost all units and was conquered by " + attacking.getOwner().getName() + "!");
@@ -195,7 +233,7 @@ public class Game {
             Player defendingPlayer = defending.getOwner();
 
             defending.setPlayer(activePlayer);
-            activePlayer.addTerritories(defending);
+            activePlayer.addTerritory(defending);
             defendingPlayer.removeTerritory(defending);
 
             attacking.removeArmy(attackRolls.size());
@@ -207,17 +245,23 @@ public class Game {
                 activePlayers.remove(defendingPlayer);
             }
         }
+        System.out.println("\nAttack phase is over.");
+        System.out.println("Here are your commands:");
+        printHelp();
     }
 
     /**
      * Prompts the user for a territory. Checks whether owner owns the territory
      * If the user enters "cancel", the function returns null.
      * @param owner Will assert this player as the owner of the territory
+     * @param lim The minimum number of armies to have on a territory
      * @return The selected territory, or null if the player entered "cancel"
+     * @author Nicolas Tuttle
      */
     private Territory promptForOwnedTerritory(Player owner, int lim) {
         Scanner sc = new Scanner(System.in);
         while (true) {
+            System.out.print("> ");
             String territoryID = sc.next().toUpperCase();
             CommandWord command = checkForCommand(territoryID);
             if (command == CommandWord.CANCEL) return null;
@@ -245,16 +289,18 @@ public class Game {
     }
 
     /**
-     * promts player for an integer, will check if input is a command, an integer or a invalid input
+     * prompts player for an integer, will check if input is a command, an integer or a invalid input
      * will loop until valid input is entered
      * @param limit the entered integer must be smaller that the integer limit
      * @return returns a valid integer input by the player
+     * @author Jacob Schmidt
      */
     private int promptForInt(int limit) {
         Scanner sc = new Scanner(System.in);
-        int temp = 0;
+        int temp;
         while (true) {
-            String testInt = sc.next();
+            System.out.print("> ");
+            String testInt = sc.next().toUpperCase();
             CommandWord command = checkForCommand(testInt);
             if (command == CommandWord.CANCEL) return -1;
             if (command == CommandWord.MAP) continue;
@@ -266,7 +312,7 @@ public class Game {
                 System.out.println("This is not a number or a command.");
                 continue;}
 
-            if (temp < limit && temp > 0) { return temp;}
+            if (temp <= limit && temp > 0) { return temp;}
             else {
                 System.out.println("This is not a valid number");
             }
@@ -280,10 +326,12 @@ public class Game {
      * If the user enters "cancel", the function returns null.
      * @param adjacent Will assert the found territory is adjacent to this territory
      * @return The selected territory, or null if the user entered "cancel"
+     * @author Nicolas Tuttle
      */
     private Territory promptForAdjacentTerritory(Territory adjacent) {
         Scanner sc = new Scanner(System.in);
         while (true) {
+            System.out.print("> ");
             String territoryID = sc.next().toUpperCase();
             CommandWord command = checkForCommand(territoryID);
             if (command == CommandWord.CANCEL) return null;
@@ -308,14 +356,17 @@ public class Game {
      * Checks the user input for a command that resets a prompt and prints an output if applicable
      * @param input The user input
      * @return The corresponding CommandWord if it exists, CommandWord.UNKNOWN otherwise
+     * @author Nicolas Tuttle
      */
     private CommandWord checkForCommand(String input) {
         if (input.equals(CommandWord.CANCEL.toString().toUpperCase())) {
             return CommandWord.CANCEL;
         } else if (input.equals(CommandWord.MAP.toString().toUpperCase())) {
+            System.out.println("This is the map of the world: ");
             printMap();
             return CommandWord.MAP;
         } else if (input.equals(CommandWord.HELP.toString().toUpperCase())) {
+            System.out.println("Your command words are: ");
             printHelp();
             return CommandWord.HELP;
         }
@@ -327,6 +378,7 @@ public class Game {
      * @param territory The territory the dice are rolled for
      * @param isAttacking True if asking for attacker's dice count, false otherwise
      * @return The number of dice the player wishes to roll
+     * @author Nicolas Tuttle
      */
     private int promptForDice(Territory territory, boolean isAttacking) {
         System.out.print((isAttacking) ? "Attacker: " : "Defender: ");
@@ -348,13 +400,14 @@ public class Game {
      * Roll dice the specified number of times and return the list of results
      * @param numDice The number of times to roll the dice
      * @return The result of the rolls
+     * @author Nicolas Tuttle
      */
     private LinkedList<Integer> rollDice(int numDice) {
         LinkedList<Integer> rolls = new LinkedList<>();
         Random random = new Random();
 
         for (int i = 0; i < numDice; i++) {
-            rolls.add(random.nextInt(6));
+            rolls.add(random.nextInt(6) + 1);
         }
 
         return rolls;
@@ -364,17 +417,19 @@ public class Game {
      * Gets a territory by its full ID (continent + ID)
      * @param id The ID corresponding to the desired territory
      * @return The Optional object containing the territory specified by the ID if it exists, an empty Optional otherwise
+     * @author Nicolas Tuttle
      */
     private Optional<Territory> findTerritory(String id) {
-        if (id.length() > 2 && continents.containsKey(id.substring(0, 1)) && isNumeric(id.substring(2))) return Optional.empty();
-        Continent continent = continents.get(id.substring(0, 1));
-        return (continent == null) ? Optional.empty() : continent.getTerritoryById(Integer.parseInt(id.substring(2)));
+        if (!(id.length() > 2 && continents.containsKey(id.substring(0, 2)) && isNumeric(id.substring(2)))) return Optional.empty();
+        Continent continent = continents.get(id.substring(0, 2));
+        return (continent == null) ? Optional.empty() : continent.getTerritoryById(Integer.parseInt(id.substring(2))-1);
     }
 
     /**
      * Checks whether a string can be parsed as an int
      * @param str The string to be checked
      * @return True if the string can be parsed as int, false otherwise
+     * @author Nicolas Tuttle
      */
     private boolean isNumeric(String str) {
         return str.matches("^\\d+$");
@@ -391,21 +446,20 @@ public class Game {
         //scanner to read user's inputs
         Scanner in = new Scanner(System.in);
 
-        int numPlayers = 0; //total number of players
+        int numPlayers; //total number of players
         String playerName; //each player name
-        boolean done = false; //for looping user inputs
         ArrayList<Integer> handleUnevenTerr4; //list of Territory total for when numPLayer=4
         ArrayList<Integer> handleUnevenTerr5; //list of Territory total for when numPLayer=5
-        Stack<String> territoryID = new Stack<>(); ; //stack of temporary territory IDs
+        Stack<String> territoryID = new Stack<>(); //stack of temporary territory IDs
         Stack<Integer> armyList2 = new Stack<>(); //stack of temporary armyList
 
         //Creating all territory lists
-        Collection<Territory> NA = new ArrayList<>();
-        Collection<Territory> EU = new ArrayList<>();
-        Collection<Territory> AS = new ArrayList<>();
-        Collection<Territory> SA = new ArrayList<>();
-        Collection<Territory> AF = new ArrayList<>();
-        Collection<Territory> AU = new ArrayList<>();
+        ArrayList<Territory> NA = new ArrayList<>();
+        ArrayList<Territory> EU = new ArrayList<>();
+        ArrayList<Territory> AS = new ArrayList<>();
+        ArrayList<Territory> SA = new ArrayList<>();
+        ArrayList<Territory> AF = new ArrayList<>();
+        ArrayList<Territory> AU = new ArrayList<>();
 
         //inputting all territories + adjacent territories into corresponding continent
         NA.add(new Territory("Alaska", "NA1", Arrays.asList("NA2", "NA6", "AS6")));
@@ -457,44 +511,44 @@ public class Game {
         AU.add(new Territory("Western Australia", "AU4", Arrays.asList("AU1", "AU2", "AU3")));
 
         //creating continents and adding corresponding territory lists
-        continents.put("NA", new Continent("North America", "NA", NA, 5));
-        continents.put("EU", new Continent("Europe", "EU", EU, 5));
-        continents.put("AS", new Continent("Asia", "AS", AS, 7));
-        continents.put("SA", new Continent("South America", "SA", SA, 2));
-        continents.put("AF", new Continent("Africa", "AF", AF, 3));
-        continents.put("AU", new Continent("Australia", "AU", AU, 2));
+        continents.put("NA", new Continent("North America", NA, 5));
+        continents.put("EU", new Continent("Europe", EU, 5));
+        continents.put("AS", new Continent("Asia", AS, 7));
+        continents.put("SA", new Continent("South America", SA, 2));
+        continents.put("AF", new Continent("Africa", AF, 3));
+        continents.put("AU", new Continent("Australia", AU, 2));
 
         //print out opening message of game
         System.out.println("Welcome to the game Risk!");
         System.out.println("Risk is a strategy based game for 2-6 players");
         System.out.println();
+        System.out.println("Enter number of players: ");
 
         //loop for number of players till input is valid
-        while (!done) {
+        while (true) {
             try {
                 //ask user number of players
-                System.out.println("Enter number of players: ");
+                System.out.print("> ");
                 numPlayers = in.nextInt();
                 //loop if input out of range
-                while (numPlayers < 2 || numPlayers > 6) {
-                    System.out.println("There can only be 2-6 players: ");
-                    numPlayers = in.nextInt();
+                if (numPlayers < 2 || numPlayers > 6) {
+                    System.out.println("There can only be 2-6 players!");
+                    continue;
                 }
-                done = true;
+                break;
                 //check for non-integer input
             } catch (InputMismatchException e) {
-                System.out.print("Not a number! ");
+                System.out.println("Not a number!");
             }
             in.nextLine();
         }
 
         //creates list of temporary Ids for each territory which is shuffled to player's get random territory
         for (String id : continents.keySet()) {
-            for (int j = 0; j < continents.get(id).getTerritoriesSize(); j++) {
+            for (int j = 1; j <= continents.get(id).getTerritoriesSize(); j++) {
                 territoryID.push("" + id + j);
             }
         }
-
         Collections.shuffle(territoryID);
 
         //insert then shuffle list of Territory total for when there are 4 or 5 players
@@ -505,21 +559,28 @@ public class Game {
 
         //now adds player's name and their territories with 1 army in each
         for (int i = 0; i < numPlayers; i++) {
-            System.out.println("Enter Player" + (i + 1) + " name: ");
-            playerName = in.nextLine();
+            System.out.println("Enter Player " + (i + 1) + " name: ");
+            System.out.print("> ");
+            playerName = in.next();
             activePlayers.add(new Player(playerName));
-            if (numPlayers == 2) {
-                initializePlayer(50,21, i, territoryID, armyList2);
-            } else if (numPlayers == 3) {
-                initializePlayer(35,14, i, territoryID, armyList2);
-            } else if (numPlayers == 4) {
-                //randomly distribute uneven amount of territories
-                initializePlayer(30, handleUnevenTerr4.get(i),i, territoryID, armyList2);
-            } else if (numPlayers == 5) {
-                //randomly distribute uneven amount of territories
-                initializePlayer(25,handleUnevenTerr5.get(i), i, territoryID, armyList2);
-            } else {
-                initializePlayer(20,7, i, territoryID, armyList2);
+            switch (numPlayers) {
+                case 2:
+                    initializePlayer(50, 21, i, territoryID, armyList2);
+                    break;
+                case 3:
+                    initializePlayer(35, 14, i, territoryID, armyList2);
+                    break;
+                case 4:
+                    //randomly distribute uneven amount of territories
+                    initializePlayer(30, handleUnevenTerr4.get(i), i, territoryID, armyList2);
+                    break;
+                case 5:
+                    //randomly distribute uneven amount of territories
+                    initializePlayer(25, handleUnevenTerr5.get(i), i, territoryID, armyList2);
+                    break;
+                default:
+                    initializePlayer(20, 7, i, territoryID, armyList2);
+                    break;
             }
             //add random amount of armies to each territory
             for (Territory territory : activePlayers.get(i).getAllLandOwned()){
@@ -529,7 +590,7 @@ public class Game {
     }
 
     /**
-     * This method initializes the player randomly adds territories to player as well as a random amount of armies to territoes.
+     * This method initializes the player randomly adds territories to player as well as a random amount of armies to territories.
      * All of which are evenly distributed between players.
      *
      * @author Robell Gabriel
@@ -537,15 +598,17 @@ public class Game {
      * @param numArmies int total number of armies for player
      * @param numOfTerr int total number of territories for player
      * @param i int used to loop between players
+     * @param armyList2 Stack of randomly distributed armies
+     * @param territoryID Stack of valid territory ids
      */
     public void initializePlayer(int numArmies, int numOfTerr, int i, Stack<String> territoryID, Stack<Integer> armyList2) {
         int [] armyList = new int[numOfTerr];
         numArmies-=numOfTerr;
         for (int z = 0; z < numOfTerr; z++) {
             //add player to random territory
-            continents.get(territoryID.peek().substring(0,2)).getTerritoryById(Integer.parseInt(territoryID.peek().substring(2))).get().setPlayer(activePlayers.get(i));
+            findTerritory(territoryID.peek()).orElseThrow().setPlayer(activePlayers.get(i));
             //add random territory to player
-            activePlayers.get(i).addTerritories(continents.get(territoryID.peek().substring(0,2)).getTerritoryById(Integer.parseInt(territoryID.pop().substring(2))).get());
+            activePlayers.get(i).addTerritory(findTerritory(territoryID.pop()).orElseThrow());
             //generates a list of random numbers that all add up to
             //total number of armies player can own and total amount of random
             //numbers are equal to number of territories they can own
@@ -568,13 +631,23 @@ public class Game {
     }
 
     /**
-     * This method shows a map of the current state of the game.
-     * Includes Continents and their territories with
+     * This method shows a map of the current state of the game as well
+     * as the total player count and the amount of territories they own.
+     * ALso includes Continents and their territories with
      * players that own them and their army count
      *
      * @author Robell Gabriel
      */
     private void printMap() {
+        System.out.println("\nPlayers still in-game:");
+        for (Player player : activePlayers){
+            if (player.getAllLandOwned().size() == 1){
+                System.out.print(player.getName() + " owns "+player.getAllLandOwned().size()+" territory\n");
+            }else{
+                System.out.print(player.getName() + " owns "+player.getAllLandOwned().size()+" territories\n");
+            }
+        }
+        System.out.println();
         for (String id : continents.keySet()) {
             System.out.println(continents.get(id).toString()+"\n-----------------------------------------------");
         }
@@ -587,9 +660,5 @@ public class Game {
      */
     private void printHelp() {
         parser.showCommands();
-        System.out.println("\nPlayers still in-game:");
-        for (Player player : activePlayers){
-            System.out.print(player.getName() + "  ");
-        }
     }
 }

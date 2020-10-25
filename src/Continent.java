@@ -7,50 +7,21 @@ import java.util.*;
  * @author Nicolas Tuttle
  */
 public class Continent {
-    private final String name, id;
+    private final String name;
     private final List<Territory> territories;
 
     public final int BONUS_ARMIES;
 
     /**
-     * Constructor for class Continent. Initializes the object with a name and empty territory list.
-     * @param name The continent's name
-     * @param id The continent's ID
-     */
-    public Continent(String name, String id, int bonusArmies) {
-        this.name = name;
-        this.id = id;
-        this.territories = new ArrayList<>();
-        this.BONUS_ARMIES = bonusArmies;
-    }
-
-    /**
      * Constructor for class Continent. Initializes the object with a name and the specified territory collection
      * @param name The continent's name
-     * @param id The continent's ID
      * @param territories The collection of continents to be used to initialize the object
+     * @param bonusArmies The number of bonus armies to be awarded if the continent is conquered
      */
-    public Continent(String name, String id, Collection<Territory> territories, int bonusArmies) {
+    public Continent(String name, List<Territory> territories, int bonusArmies) {
         this.name = name;
-        this.id = id;
-        this.territories = new ArrayList<>(territories);
+        this.territories = territories;
         this.BONUS_ARMIES = bonusArmies;
-    }
-
-    /**
-     * Adds a territory to the continent.
-     * @param newTerritory The new territory to be added to the continent
-     */
-    public void addTerritory(Territory newTerritory) {
-        territories.add(newTerritory);
-    }
-
-    /**
-     * Adds a collection of territories to the continent.
-     * @param territories The collection of territories to be added to the continent.
-     */
-    public void addTerritory(Collection<Territory> territories) {
-        this.territories.addAll(territories);
     }
 
     /**
@@ -86,14 +57,6 @@ public class Continent {
      */
     public int getTerritoriesSize(){
         return territories.size();
-    }
-
-    /**
-     * Get the short form ID for this continent
-     * @return The continent's ID
-     */
-    public String getID() {
-        return this.id;
     }
 
     /**

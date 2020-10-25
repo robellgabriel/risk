@@ -17,7 +17,7 @@ public class Player {
      */
     public Player(String name) {
         this.name = name;
-        ownedlands = new LinkedHashSet<>();
+        ownedlands = new HashSet<>();
     }
 
     /**
@@ -33,7 +33,7 @@ public class Player {
      * player owned
      * @param ter is the new territory that will be added to the list
      */
-    public void addTerritories(Territory ter){
+    public void addTerritory(Territory ter){
         ownedlands.add(ter);
     }
 

@@ -12,7 +12,7 @@ public class Territory {
     private int numArmies = 0; //amount of armies contained in the country
     private final String name; //name to identify country by
     private final String id; //id to identify country by
-    private List<String> listOfAdjacents; //List of countries that belong to other countries adjacent to this one
+    private final List<String> listOfAdjacents; //List of countries that belong to other countries adjacent to this one
 
     /**
      * constructor for territory.
@@ -26,19 +26,11 @@ public class Territory {
     }
 
     /**
-     * Add a new territory to the list of adjacents
-     * @param adjacent The territory to add to the adjacency list
-     */
-    public void addAdjacent(String adjacent) {
-        this.listOfAdjacents.add(adjacent);
-    }
-
-    /**
      * function that increments the amount of armies in the territory by numAdd as long as the number does
-     * not surpass the itneger canAdd
+     * not surpass the integer canAdd
      * @param numAdd integer to add to numArmies
      * @param canAdd integer that limits how much can be added to numArmies
-     * @return a boolean representing whether the method was succesfull
+     * @return a boolean representing whether the method was successful
      */
     public boolean addArmy(int numAdd, int canAdd ){
         if (numAdd > canAdd){
@@ -52,7 +44,7 @@ public class Territory {
      * function that decrements numArmies in the territory by numRemove as long as the resulting int is
      * larger than 0
      * @param numRemove integer that represent the amount to decrement numArmies by
-     * @return a boolean representing whether the method was succesfull
+     * @return a boolean representing whether the method was successful
      */
     public boolean removeArmy(int numRemove){
         if (numArmies - numRemove <= 0){
@@ -87,12 +79,6 @@ public class Territory {
     }
 
     /**
-     * a method to read the id of the territory
-     * @return a string representation of the ID
-     */
-    public String getID() { return id; }
-
-    /**
      * a method to read who the owner is
      * @return a Player, owner
      */
@@ -109,10 +95,17 @@ public class Territory {
     }
 
     /**
+     * a method to read the list of all adjacent territories
+     * @return a string representing all adjacent territory's IDs
+     */
+    public String getAdjacentList(){
+        return listOfAdjacents.toString();
+    }
+    /**
      * a method that checks to see if a String toCheck is contained within the
      * listOFAdjacents list.
      * @param toCheck Territory whose ID is checked against listOfAdjacents
-     * @return a boolean representing wether a match was found or not.
+     * @return a boolean representing whether a match was found or not.
      */
     public boolean isAdjacentTo(String toCheck){
         if (listOfAdjacents.isEmpty()){
@@ -123,11 +116,7 @@ public class Territory {
 
     @Override
     public String toString() {
-        if (numArmies==1){
-            return name + " is owned by " + owner.getName() + " with " + numArmies + " army";
-        }else {
-            return name + " is owned by " + owner.getName() + " with " + numArmies + " armies";
-        }
+        return name + "[" + id + "] | Owner: " + owner.getName() + " | Armies: " + numArmies + " | Adjacent Territories: " +listOfAdjacents;
     }
 }
 
