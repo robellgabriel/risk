@@ -9,7 +9,7 @@ public class Player {
      * @author Phuc La
      */
     private String name;
-    private Set<Territory> ownedlands;
+    private List<Territory> ownedlands;
 
     /**
      * Constructor for the player that will play the game
@@ -17,7 +17,7 @@ public class Player {
      */
     public Player(String name) {
         this.name = name;
-        ownedlands = new HashSet<>();
+        ownedlands = new LinkedList<>();
     }
 
     /**
@@ -48,9 +48,9 @@ public class Player {
 
     /**
      * Return the list of lands owned by the player so far in the game
-     * @return the set that contained all the land that the player owned at the moment
+     * @return the list that contained all the land that the player owned at the moment
      */
-    public Set<Territory> getAllLandOwned(){
+    public List<Territory> getAllLandOwned(){
         return ownedlands;
     }
 }

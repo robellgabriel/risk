@@ -1,4 +1,8 @@
+import javax.swing.*;
+import javax.swing.tree.*;
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 
 /**
  * The main game class for the game Risk. This manages all operations including game initialization,
@@ -6,11 +10,15 @@ import java.util.*;
  *
  * @author Nicolas Tuttle, Phuc La, Robell Gabriel, Jacob Schmidt
  */
-public class Game {
+public class Game extends JFrame {
     private final List<Player> activePlayers;
     private final Map<String, Continent> continents;
     private final Parser parser;
+    private static Player currentPlayer;
+    private final String[] options = {"OK"};
+
     public Game() {
+        super("RISK");
         activePlayers = new LinkedList<>();
         continents = new HashMap<>();
         parser = new Parser();
@@ -24,117 +32,192 @@ public class Game {
     /**
      *This is the main body of the game, where the players will play the game
      *
-     * @author Phuc La
+     * @author Phuc La and Robell Gabriel
      */
     public void play() {
         //Initializer to get number of players, player's name, distribution of territory and armies
         initialize();
-        Player currentplayer = activePlayers.get(0);
-        //main game loop where the game happens
-        System.out.println("Here are the commands for the game: ");
-        parser.showCommands();
-        while(activePlayers.size()>1){
-            boolean finished = false;
-            System.out.println("\n"+currentplayer.getName()+"'s turn: ");
-            placePhase(currentplayer);
-            while(!finished){
-                Command command = parser.getCommand();
-                finished = processCommand(command, currentplayer);
-            }
-            currentplayer = activePlayers.get((activePlayers.indexOf(currentplayer) +1 ) % activePlayers.size());
-        }
-        System.out.println("Congratulations "+currentplayer.getName()+". You are the winner!!!");
-    }
 
-    /**
-     * This methods is called during the player's turn to process their command after the
-     * first phase of the game is done
-     * @param command is the command that decide the action of the player in the game after phase 1
-     * @param currplayer is the current player that is playing in this turn
-     * @return false if the player is not done with their turn, true other wise
-     *
-     * @author Phuc La
-     */
-    private boolean processCommand(Command command, Player currplayer){
-        if(command.isUnknown()){
-            System.out.println("Not a valid command!");
+        currentPlayer = activePlayers.get(0);
+
+        //JList of each continent's Territories
+        DefaultMutableTreeNode mapList = new DefaultMutableTreeNode();
+        for (String id : continents.keySet()) {
+            DefaultMutableTreeNode contList = new DefaultMutableTreeNode(continents.get(id).getName());
+            for (Territory territory : continents.get(id).getTerritoryList()){
+                DefaultMutableTreeNode terr = new DefaultMutableTreeNode(territory.toString());
+                contList.add(terr);
+            }
+            mapList.add(contList);
         }
-        String commandWord = command.getCommandWord().toString();
-        switch (commandWord) {
-            case "help":
-                System.out.println("Your command words are: ");
-                printHelp();
-                break;
-            case "attack":
-                System.out.println("You are in attacking phase: ");
-                attack(currplayer);
-                break;
-            case "move":
-                System.out.println("You are in moving phase.");
-                if (movePhase(currplayer)) {
-                    System.out.println("You finished moving, moving on to next player.");
-                    return true;
+        JTree map = new JTree(mapList);
+        map.setRootVisible(false);
+        for (int i = 0; i < map.getRowCount(); i++){
+            map.expandRow(i);
+        }
+        JScrollPane mapScrollPane = new JScrollPane(map);
+        JLabel mapLabel = new JLabel("Map");
+
+        //JList of player leaderboard
+        DefaultListModel<String> leaderBoardList = new DefaultListModel<>();
+        for (Player player : activePlayers){
+            leaderBoardList.addElement(player.getName() + " owns "+player.getAllLandOwned().size()+" territories");
+        }
+        JList <String> leaderBoard = new JList<>(leaderBoardList);
+        JLabel leaderBoardLabel = new JLabel("Leaderboard");
+        leaderBoardLabel.setVerticalAlignment(JLabel.BOTTOM);
+
+        //Jlabel for player turn and armies remaining to place
+        JLabel playerTurn = new JLabel("It is " +currentPlayer.getName()+ "'s turn");
+
+        //JButtons for attack, move and done
+        JButton attack = new JButton ("Attack");
+        JButton move = new JButton ("Move");
+        JButton done = new JButton ("Done");
+        JButton place = new JButton("Place");
+        attack.addActionListener(e -> {
+            int result;
+            attack(currentPlayer);
+            resetMap(mapList, map);
+            leaderBoardList.removeAllElements();
+            for (Player player : activePlayers){
+                leaderBoardList.addElement(player.getName() + " owns "+player.getAllLandOwned().size()+" territories");
+            }
+            if (activePlayers.size()==1) {
+                do {
+                    result = JOptionPane.showOptionDialog(this, "Congratulations " + currentPlayer.getName() + ". You are the winner!!!","Winner",
+                            JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
+                            null, options, options[0]);
                 }
-                break;
-            case "done":
-                System.out.println("Your turn is now finished. Move on to the next player");
-                return true;
-            case "map":
-                System.out.println("This is the map of the world: ");
-                printMap();
-                break;
-            case "quit":
-                System.out.println("Thanks for playing!");
-                System.exit(0);
-        }
-        return false;
+                while (result == JOptionPane.CLOSED_OPTION);
+                this.dispose();
+            }
+        });
+        move.addActionListener(e -> {
+            if(movePhase(currentPlayer)){
+                resetMap(mapList, map);
+                currentPlayer = activePlayers.get((activePlayers.indexOf(currentPlayer) +1 ) % activePlayers.size());
+                playerTurn.setText("It is " +currentPlayer.getName()+ "'s turn: ");
+                place.setEnabled(true);
+                attack.setEnabled(false);
+                move.setEnabled(false);
+                done.setEnabled(false);
+            }
+        });
+        done.addActionListener(e -> {
+            currentPlayer = activePlayers.get((activePlayers.indexOf(currentPlayer) +1 ) % activePlayers.size());
+            playerTurn.setText("It is " +currentPlayer.getName()+ "'s turn: ");
+            place.setEnabled(true);
+            attack.setEnabled(false);
+            move.setEnabled(false);
+            done.setEnabled(false);
+
+        });
+        place.addActionListener(e -> {
+            placePhase(currentPlayer);
+            resetMap(mapList, map);
+            place.setEnabled(false);
+            attack.setEnabled(true);
+            move.setEnabled(true);
+            done.setEnabled(true);
+        });
+
+        //TextArea to show the log
+        JTextArea actionlog = new JTextArea();
+        JLabel actionlogLabel = new JLabel("Action log");
+        actionlogLabel.setSize(10,10);
+        //disable all buttons until place phase is done
+        attack.setEnabled(false);
+        move.setEnabled(false);
+        done.setEnabled(false);
+        //panels for main menu
+        JPanel bottomPanel = new JPanel();
+        bottomPanel.setLayout(new GridLayout(1,4));
+        JPanel rightPanel = new JPanel();
+        rightPanel.setLayout(new BoxLayout(rightPanel,BoxLayout.Y_AXIS));
+        JPanel leftPanel = new JPanel();
+        leftPanel.setLayout(new BoxLayout(leftPanel,BoxLayout.Y_AXIS));
+        JPanel p1 = new JPanel();
+        p1.setLayout(new BorderLayout());
+
+        //adding features to main menu
+        setLayout(new BorderLayout());
+        leftPanel.add(mapLabel);
+        leftPanel.add(mapScrollPane);
+        add(leftPanel,BorderLayout.WEST);
+        p1.add(leaderBoard,BorderLayout.CENTER);
+        rightPanel.add(leaderBoardLabel);
+        rightPanel.add(p1);
+        rightPanel.add(actionlogLabel);
+        rightPanel.add(actionlog);
+        rightPanel.add(playerTurn);
+        add(rightPanel,BorderLayout.CENTER);
+        bottomPanel.add(attack);
+        bottomPanel.add(move);
+        bottomPanel.add(done);
+        bottomPanel.add(place);
+        add(bottomPanel,BorderLayout.SOUTH);
+        this.setSize(1200,600);
+        this.setVisible(true);
+        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+
     }
 
     /**
-     * Calculates the number of armies the player will be getting then calls a method that allows
-     * the player to distribute said number of armies throughout his owned territories
-     * @param currPlayer the player who's turn it is
-     * @author Jacob Schmidt
+     * Updates the map as the game progresses (IE: attack/move territories losing/gaining armies)
+     *
+     * @param mapList TreeNode containing all territories categorized by corresponding continent
+     * @param map JTree contain mapList of territory view for mainscreen
+     *
+     * @author Robell Gabriel and Phuc La
      */
-    public void placePhase(Player currPlayer) {
-        int armiesRemaining = 3 + (currPlayer.getAllLandOwned().size()-9)/3;
-        for (Continent continent : continents.values()) {
-            Optional<Player> conqueror = continent.getConqueror();
-            if (conqueror.isPresent() && conqueror.get().equals(currPlayer)) armiesRemaining += continent.BONUS_ARMIES;
-        }
+    public void resetMap(DefaultMutableTreeNode mapList, JTree map){
+        mapList.removeAllChildren();
+        for (String id : continents.keySet()) {
+            DefaultMutableTreeNode contList = new DefaultMutableTreeNode(continents.get(id).getName());
+            for (Territory territory : continents.get(id).getTerritoryList()){
+                DefaultMutableTreeNode terr = new DefaultMutableTreeNode(territory.toString());
+                contList.add(terr);
+            }
+            mapList.add(contList);
 
-        System.out.println("Place phase initiated for " + currPlayer.getName());
-        System.out.println("You have been given " +armiesRemaining+ " armies");
-        while(armiesRemaining > 0){
-            System.out.println("Please enter the ID of the Territory you wish to place armies into. There are " +armiesRemaining+ " left to place");
-            Territory toPlace = promptForOwnedTerritory(currPlayer,1);
-            if(toPlace == null) {
-                System.out.println("You cant cancel place phase");
-                continue;
-            }
-            System.out.println("Please choose the number of armies you would like to place");
-            int i = promptForInt(armiesRemaining);
-            if(i < 0) {
-                System.out.println("You cant cancel place phase");
-                continue;
-            }
-            toPlace.addArmy(i,armiesRemaining);
-            armiesRemaining -= i;
-            System.out.println("Congrats you have placed " + i + " armies into " + toPlace.getName());
         }
-        System.out.println("Place phase is over.");
-        System.out.println("Here are your commands\n");
-        printHelp();
-        System.out.println("\nIf you change your mind and would like to go back in attack/move. \nUse the cancel command before choosing the territories to attack/move");
-        System.out.println("\nIf you would like to end your turn early, use the done command.");
+        SwingUtilities.updateComponentTreeUI(map);
+        for (int i = 0; i < map.getRowCount(); i++) {
+            map.expandRow(i);
+        }
     }
+
+    /**
+     * Place phase for RISK game
+     * @param currPlayer is the player that is playing at the moment
+     *
+     * @author Robell Gabriel and Phuc La
+     */
+    public void placePhase(Player currPlayer){
+        int result;
+       PlacePanel plp = new PlacePanel(currPlayer,continents);
+        do {
+            result = JOptionPane.showOptionDialog(this, plp,"Place", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+        }
+        while (result == JOptionPane.CLOSED_OPTION || plp.getArmiesRemaining()>0);
+        List<Territory> playerLand = currPlayer.getAllLandOwned();
+        for (int i = 0; i < playerLand.size(); i++) {
+            for (Territory terr : plp.territoriesArmyIncreased()) {
+                if (playerLand.get(i).getName().equals(terr.getName())){
+                    playerLand.set(i, terr);
+                }
+            }
+        }
+    }
+
 
     /**
      * lets the player move armies from one territory to another as long as they are adjacent to each other and
      * the number of armies in territories allow it. also allows the player to call the map function or cancel
      * the move phase
      * @param currPlayer player who's turn it currently is
-     * @return a boolean value that is false if movePhase is canceled or true if movePhase is successful
      * @author Jacob Schmidt
      */
     public boolean movePhase(Player currPlayer) {
@@ -238,6 +321,13 @@ public class Game {
 
             attacking.removeArmy(attackRolls.size());
             defending.setNumArmies(attackRolls.size() - attackLosses);
+
+
+            //cheat code -> winner tester
+            /*List<Territory> lst = new ArrayList<Territory>(defendingPlayer.getAllLandOwned());
+            for(Territory ter : lst){
+                defendingPlayer.removeTerritory(ter);
+            }*/
 
             if (defendingPlayer.getAllLandOwned().size() == 0) {
                 // Defender has no territories left, they are eliminated
@@ -442,11 +532,7 @@ public class Game {
      * @author Robell Gabriel
      */
     private void initialize() {
-
-        //scanner to read user's inputs
-        Scanner in = new Scanner(System.in);
-
-        int numPlayers; //total number of players
+        int result;
         String playerName; //each player name
         ArrayList<Integer> handleUnevenTerr4; //list of Territory total for when numPLayer=4
         ArrayList<Integer> handleUnevenTerr5; //list of Territory total for when numPLayer=5
@@ -518,30 +604,15 @@ public class Game {
         continents.put("AF", new Continent("Africa", AF, 3));
         continents.put("AU", new Continent("Australia", AU, 2));
 
-        //print out opening message of game
-        System.out.println("Welcome to the game Risk!");
-        System.out.println("Risk is a strategy based game for 2-6 players");
-        System.out.println();
-        System.out.println("Enter number of players: ");
-
-        //loop for number of players till input is valid
-        while (true) {
-            try {
-                //ask user number of players
-                System.out.print("> ");
-                numPlayers = in.nextInt();
-                //loop if input out of range
-                if (numPlayers < 2 || numPlayers > 6) {
-                    System.out.println("There can only be 2-6 players!");
-                    continue;
-                }
-                break;
-                //check for non-integer input
-            } catch (InputMismatchException e) {
-                System.out.println("Not a number!");
-            }
-            in.nextLine();
+        //welcome panel of risk game
+        WelcomePanel wp = new WelcomePanel();
+        do {
+            result = JOptionPane.showOptionDialog(this, wp,"Welcome",
+                    JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
+                    null, options, options[0]);
         }
+        while (result == JOptionPane.CLOSED_OPTION);
+        int numPlayers=wp.getPlayerCount(); //total number of players
 
         //creates list of temporary Ids for each territory which is shuffled to player's get random territory
         for (String id : continents.keySet()) {
@@ -557,11 +628,17 @@ public class Game {
         Collections.shuffle(handleUnevenTerr4);
         Collections.shuffle(handleUnevenTerr5);
 
-        //now adds player's name and their territories with 1 army in each
+        //Player name panel asks names then adds player's name and their territories with random amount of armies each
         for (int i = 0; i < numPlayers; i++) {
-            System.out.println("Enter Player " + (i + 1) + " name: ");
-            System.out.print("> ");
-            playerName = in.next();
+            PlayerNamePanel pmp = new PlayerNamePanel(i);
+            do {
+                result = JOptionPane.showOptionDialog(
+                        this, pmp, "Keep Name Short",
+                        JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
+                        null, options, options[0]);
+            }while (result == JOptionPane.CLOSED_OPTION || pmp.getPlayerName().isBlank()
+                     || pmp.getPlayerName().length()>15 || pmp.getPlayerName().equals("Name here"));
+            playerName=pmp.getPlayerName();
             activePlayers.add(new Player(playerName));
             switch (numPlayers) {
                 case 2:

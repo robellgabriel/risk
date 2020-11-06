@@ -117,7 +117,7 @@ public class Territory {
 
     @Override
     public String toString() {
-        return name + "[" + id + "] | Owner: " + owner.getName() + " | Armies: " + numArmies + " | Adjacent Territories: " +listOfAdjacents;
+        return name + " [" + id + "] | Owner: " + owner.getName() + " | Armies: " + numArmies + " | Adjacent Territories: " +listOfAdjacents;
     }
 }
 
