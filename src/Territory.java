@@ -64,6 +64,14 @@ public class Territory {
     }
 
     /**
+     * Get this territory's ID
+     * @return The territory's id
+     */
+    public String getId() {
+        return id;
+    }
+
+    /**
      * a method to read the integer numArmies
      * @return an integer representing numArmies
      */
@@ -113,6 +121,14 @@ public class Territory {
             return false;
         }
         return listOfAdjacents.contains(toCheck);
+    }
+
+    /**
+     * Gets the adjacency list associated with the territory
+     * @return The list of adjacent territory IDs
+     */
+    public List<String> getAdjacencyList() {
+        return listOfAdjacents;
     }
 
     @Override

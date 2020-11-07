@@ -16,12 +16,15 @@ public class Game extends JFrame {
     private final Parser parser;
     private static Player currentPlayer;
     private final String[] options = {"OK"};
+    private JTextArea actionlog;
 
     public Game() {
         super("RISK");
         activePlayers = new LinkedList<>();
         continents = new HashMap<>();
         parser = new Parser();
+        this.setVisible(true);
+        this.setDefaultCloseOperation(EXIT_ON_CLOSE);
     }
 
     public static void main(String[] args) {
@@ -123,7 +126,11 @@ public class Game extends JFrame {
         });
 
         //TextArea to show the log
-        JTextArea actionlog = new JTextArea();
+        actionlog = new JTextArea();
+        actionlog.setEditable(false);
+        actionlog.setRows(20);
+        JScrollPane actionLogScroll = new JScrollPane(actionlog);
+        actionLogScroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
         JLabel actionlogLabel = new JLabel("Action log");
         actionlogLabel.setSize(10,10);
         //disable all buttons until place phase is done
@@ -149,7 +156,7 @@ public class Game extends JFrame {
         rightPanel.add(leaderBoardLabel);
         rightPanel.add(p1);
         rightPanel.add(actionlogLabel);
-        rightPanel.add(actionlog);
+        rightPanel.add(actionLogScroll);
         rightPanel.add(playerTurn);
         add(rightPanel,BorderLayout.CENTER);
         bottomPanel.add(attack);
@@ -162,6 +169,16 @@ public class Game extends JFrame {
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 
+    }
+
+    /**
+     * Prints a line to the action log
+     * @param str The line to be printed to the action log
+     * @author Nicolas Tuttle
+     */
+    public void printLine(String str) {
+        actionlog.append(str + "\n");
+        actionlog.setCaretPosition(actionlog.getDocument().getLength());
     }
 
     /**
@@ -254,39 +271,60 @@ public class Game extends JFrame {
      * @author Nicolas Tuttle
      */
     public void attack(Player activePlayer) {
-        // Returning null corresponds to player entering "cancel"
-        System.out.println("You have chosen to attack! Enter the ID of the territory you wish to attack from:");
-        Territory attacking = promptForOwnedTerritory(activePlayer,2);
-        if (attacking == null) {
-            System.out.println("Your commands:");
-            printHelp();
+        AttackPanel ap = new AttackPanel(activePlayer, this);
+        int result = JOptionPane.CLOSED_OPTION;
+
+        while (
+            // If user has not selected valid territories or closed the window, reopen to prompt again
+            result == JOptionPane.CLOSED_OPTION
+            || (
+                result == JOptionPane.OK_OPTION
+                && (ap.getAttackingTerritory() == null
+                || ap.getDefendingTerritory() == null)
+            )
+        ) {
+            result = JOptionPane.showConfirmDialog(
+                this,
+                ap,
+                "Select a territory to attack!",
+                JOptionPane.OK_CANCEL_OPTION
+            );
+        }
+
+        if (result == JOptionPane.CANCEL_OPTION) {
+            printLine("The attack was cancelled.\n");
             return;
         }
 
-        System.out.println("Here are all adjacent territories to " +attacking.getName()+ " by ID: "+attacking.getAdjacentList());
-        System.out.println("Select the territory you wish to attack:");
-        Territory defending = promptForAdjacentTerritory(attacking);
-        if (defending == null) {
-            System.out.println("Your commands:");
-            printHelp();
-            return;
-        }
-        while (defending.getOwner() == attacking.getOwner()) {
-            System.out.println("You cannot attack a territory you own! Select a new territory:");
-            defending = promptForAdjacentTerritory(attacking);
-            if (defending == null) return;
+        Territory attacking = ap.getAttackingTerritory();
+        Territory defending = ap.getDefendingTerritory();
+
+        result = JOptionPane.CLOSED_OPTION;
+        DefendPanel dp = new DefendPanel(defending);
+
+        while (result == JOptionPane.CLOSED_OPTION) {
+            result = JOptionPane.showOptionDialog(
+                this,
+                dp,
+                "Select a number of armies!",
+                JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                options,
+                options[0]
+            );
         }
 
-        System.out.println("Battle! Player " + attacking.getOwner().getName() + " is attacking " + defending.getName() + "!");
-        LinkedList<Integer> attackRolls = rollDice(promptForDice(attacking, true));
-        LinkedList<Integer> defendRolls = rollDice(promptForDice(defending, false));
+        LinkedList<Integer> attackRolls = rollDice(ap.getArmyNum());
+        LinkedList<Integer> defendRolls = rollDice(dp.getArmyNum());
 
         // Sort to find highest pairs
         attackRolls.sort(Collections.reverseOrder());
         defendRolls.sort(Collections.reverseOrder());
 
-        System.out.println("Attacker rolled " + attackRolls.size() + " dice: "+ Arrays.toString(attackRolls.toArray()));
-        System.out.println("Defender rolled " + defendRolls.size() + " dice: "+ Arrays.toString(defendRolls.toArray()));
+        printLine(attacking.getOwner().getName() + " is attacking " + defending.getName() + " with " + attacking.getName() + "!");
+        printLine("Attacker rolled " + attackRolls.size() + " dice: "+ Arrays.toString(attackRolls.toArray()));
+        printLine("Defender rolled " + defendRolls.size() + " dice: "+ Arrays.toString(defendRolls.toArray()) + "\n");
 
         int attackLosses = 0;
         int defendLosses = 0;
@@ -306,12 +344,12 @@ public class Game extends JFrame {
             // Defending still has units left
             attacking.removeArmy(attackLosses);
 
-            System.out.println("The attacking territory lost " + attackLosses + " unit(s)! It has " + attacking.getNumArmies() + " unit(s) left.");
-            System.out.println("The defending territory lost " + defendLosses + " unit(s)! It has " + defending.getNumArmies() + " unit(s) left.");
+            printLine("The attacking territory lost " + attackLosses + " unit(s)! It has " + attacking.getNumArmies() + " unit(s) left.");
+            printLine("The defending territory lost " + defendLosses + " unit(s)! It has " + defending.getNumArmies() + " unit(s) left.\n");
 
         } else {
             // Territory conquered! Transfer ownership and move one unit over to defend
-            System.out.println("The defending territory lost all units and was conquered by " + attacking.getOwner().getName() + "!");
+            printLine("The defending territory lost all units and was conquered by " + attacking.getOwner().getName() + "!\n");
 
             Player defendingPlayer = defending.getOwner();
 
@@ -331,13 +369,10 @@ public class Game extends JFrame {
 
             if (defendingPlayer.getAllLandOwned().size() == 0) {
                 // Defender has no territories left, they are eliminated
-                System.out.println(defendingPlayer.getName() + " has lost all their territories! They have been eliminated.");
+                printLine(defendingPlayer.getName() + " has lost all their territories! They have been eliminated.\n");
                 activePlayers.remove(defendingPlayer);
             }
         }
-        System.out.println("\nAttack phase is over.");
-        System.out.println("Here are your commands:");
-        printHelp();
     }
 
     /**
@@ -464,29 +499,6 @@ public class Game extends JFrame {
     }
 
     /**
-     * Prompts the user for a number of dice to roll. Checks whether it is within the allowed bounds.
-     * @param territory The territory the dice are rolled for
-     * @param isAttacking True if asking for attacker's dice count, false otherwise
-     * @return The number of dice the player wishes to roll
-     * @author Nicolas Tuttle
-     */
-    private int promptForDice(Territory territory, boolean isAttacking) {
-        System.out.print((isAttacking) ? "Attacker: " : "Defender: ");
-        int maxDice = Math.min(territory.getNumArmies() - (isAttacking ? 1 : 0), isAttacking ? 3 : 2);
-        while (true) {
-            System.out.println("Select the amount of dice you wish to roll:");
-            int numDice = promptForInt(maxDice);
-
-            if (numDice < 0){
-                System.out.println("You cannot cancel during a dice roll.");
-                continue;
-            }
-
-            return numDice;
-        }
-    }
-
-    /**
      * Roll dice the specified number of times and return the list of results
      * @param numDice The number of times to roll the dice
      * @return The result of the rolls
@@ -509,10 +521,11 @@ public class Game extends JFrame {
      * @return The Optional object containing the territory specified by the ID if it exists, an empty Optional otherwise
      * @author Nicolas Tuttle
      */
-    private Optional<Territory> findTerritory(String id) {
-        if (!(id.length() > 2 && continents.containsKey(id.substring(0, 2)) && isNumeric(id.substring(2)))) return Optional.empty();
+    public Optional<Territory> findTerritory(String id) {
+        if (!(id.length() > 2 && continents.containsKey(id.substring(0, 2)) && isNumeric(id.substring(2))))
+            return Optional.empty();
         Continent continent = continents.get(id.substring(0, 2));
-        return (continent == null) ? Optional.empty() : continent.getTerritoryById(Integer.parseInt(id.substring(2))-1);
+        return (continent == null) ? Optional.empty() : continent.getTerritoryById(Integer.parseInt(id.substring(2)) - 1);
     }
 
     /**
