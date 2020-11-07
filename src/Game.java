@@ -4,6 +4,7 @@ import java.awt.*;
 import java.util.*;
 import java.util.List;
 
+
 /**
  * The main game class for the game Risk. This manages all operations including game initialization,
  * player turns, and command handling. The game ends when there is one player left standing.
@@ -24,7 +25,9 @@ public class Game extends JFrame {
         continents = new HashMap<>();
         parser = new Parser();
         this.setVisible(true);
+
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
+
     }
 
     public static void main(String[] args) {
@@ -238,30 +241,38 @@ public class Game extends JFrame {
      * @author Jacob Schmidt
      */
     public boolean movePhase(Player currPlayer) {
-        System.out.println("Move phase initiated for " + currPlayer.getName());
-        System.out.println("Please enter a territory's ID that u wish to move armies from");
-        Territory toRemove = promptForOwnedTerritory(currPlayer,2);
-        if(toRemove == null){
-            System.out.println("Your commands:");
-            printHelp();
-            return false;
+        MovePanel test = new MovePanel(currPlayer,this);
+        int result = JOptionPane.CLOSED_OPTION;
+        //actionLog.append("Move phase initiated for " + currPlayer.getName());
+
+        while (
+            // If user has not selected valid territories or closed the window, reopen to prompt again
+                result == JOptionPane.CLOSED_OPTION
+                        || (
+                        result == JOptionPane.OK_OPTION
+                                && (test.getMoveTo() == null
+                                || test.getMoveFrom() == null)
+                )
+        ) {
+            result = JOptionPane.showConfirmDialog(
+                    this,
+                    test,
+                    "Select a territory to move from!",
+                    JOptionPane.OK_CANCEL_OPTION
+            );
         }
-        System.out.println("Here are all adjacent territories to " +toRemove.getName()+ " by ID: "+toRemove.getAdjacentList());
-        System.out.println("Please enter a territory's ID that u wish to move armies To");
-        Territory toPlace = promptForAdjacentTerritory(toRemove);
-        if(toPlace == null){
-            System.out.println("Your commands:");
-            printHelp();
-            return false;
-        }
-        System.out.println("Please enter the number of armies you wish to move");
-        int i = promptForInt(toRemove.getNumArmies()-1);
-        if (i < 0) return false;
+
+        if (result == JOptionPane.CANCEL_OPTION) return false;
+
+        Territory toRemove = test.getMoveFrom();
+        Territory toPlace = test.getMoveTo();
+        int i = test.getArmiesToMove();
+
 
         toRemove.removeArmy(i);
         toPlace.addArmy(i,i);
-        System.out.println("You have moved " + i + " armies from " + toRemove.getName() + " to " + toPlace.getName());
-        System.out.println("Move phase is over");
+        //actionLog.append("You have moved " + i + " armies from " + toRemove.getName() + " to " + toPlace.getName());
+        //actionLog.append("Move phase is over");
         return true;
     }
 
@@ -524,6 +535,7 @@ public class Game extends JFrame {
     public Optional<Territory> findTerritory(String id) {
         if (!(id.length() > 2 && continents.containsKey(id.substring(0, 2)) && isNumeric(id.substring(2))))
             return Optional.empty();
+
         Continent continent = continents.get(id.substring(0, 2));
         return (continent == null) ? Optional.empty() : continent.getTerritoryById(Integer.parseInt(id.substring(2)) - 1);
     }
@@ -617,6 +629,7 @@ public class Game extends JFrame {
         continents.put("AF", new Continent("Africa", AF, 3));
         continents.put("AU", new Continent("Australia", AU, 2));
 
+
         //welcome panel of risk game
         WelcomePanel wp = new WelcomePanel();
         do {
@@ -626,6 +639,7 @@ public class Game extends JFrame {
         }
         while (result == JOptionPane.CLOSED_OPTION);
         int numPlayers=wp.getPlayerCount(); //total number of players
+
 
         //creates list of temporary Ids for each territory which is shuffled to player's get random territory
         for (String id : continents.keySet()) {
@@ -643,6 +657,7 @@ public class Game extends JFrame {
 
         //Player name panel asks names then adds player's name and their territories with random amount of armies each
         for (int i = 0; i < numPlayers; i++) {
+
             PlayerNamePanel pmp = new PlayerNamePanel(i);
             do {
                 result = JOptionPane.showOptionDialog(
@@ -652,6 +667,7 @@ public class Game extends JFrame {
             }while (result == JOptionPane.CLOSED_OPTION || pmp.getPlayerName().isBlank()
                      || pmp.getPlayerName().length()>15 || pmp.getPlayerName().equals("Name here"));
             playerName=pmp.getPlayerName();
+
             activePlayers.add(new Player(playerName));
             switch (numPlayers) {
                 case 2:

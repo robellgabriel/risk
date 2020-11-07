@@ -107,8 +107,8 @@ public class Territory {
      * a method to read the list of all adjacent territories
      * @return a string representing all adjacent territory's IDs
      */
-    public String getAdjacentList(){
-        return listOfAdjacents.toString();
+    public List<String> getAdjacentList(){
+        return listOfAdjacents;
     }
     /**
      * a method that checks to see if a String toCheck is contained within the
