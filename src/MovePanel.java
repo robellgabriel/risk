@@ -84,7 +84,7 @@ public class MovePanel extends JPanel{
                 temp.add(toCheck);
             }
         }
-        temp.sort(Comparator.comparing(Territory::getName));
+        temp.sort(Comparator.comparing(Territory::getId));
         return new JList<>(  temp.toArray(new Territory[0]));
     }
 
@@ -105,7 +105,7 @@ public class MovePanel extends JPanel{
                 temp.add(tempTerritory);
             }
         }
-        temp.sort(Comparator.comparing(Territory::getName));
+        temp.sort(Comparator.comparing(Territory::getId));
         return temp.toArray(new Territory[0]);
     }
 

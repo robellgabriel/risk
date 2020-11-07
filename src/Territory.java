@@ -31,14 +31,12 @@ public class Territory {
      * not surpass the integer canAdd
      * @param numAdd integer to add to numArmies
      * @param canAdd integer that limits how much can be added to numArmies
-     * @return a boolean representing whether the method was successful
      */
-    public boolean addArmy(int numAdd, int canAdd ){
+    public void addArmy(int numAdd, int canAdd ){
         if (numAdd > canAdd){
-            return false;
+            return;
         }
         numArmies += numAdd;
-        return true;
     }
 
     /**
@@ -108,26 +106,6 @@ public class Territory {
      * @return a string representing all adjacent territory's IDs
      */
     public List<String> getAdjacentList(){
-        return listOfAdjacents;
-    }
-    /**
-     * a method that checks to see if a String toCheck is contained within the
-     * listOFAdjacents list.
-     * @param toCheck Territory whose ID is checked against listOfAdjacents
-     * @return a boolean representing whether a match was found or not.
-     */
-    public boolean isAdjacentTo(String toCheck){
-        if (listOfAdjacents.isEmpty()){
-            return false;
-        }
-        return listOfAdjacents.contains(toCheck);
-    }
-
-    /**
-     * Gets the adjacency list associated with the territory
-     * @return The list of adjacent territory IDs
-     */
-    public List<String> getAdjacencyList() {
         return listOfAdjacents;
     }
 

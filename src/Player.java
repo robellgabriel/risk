@@ -8,8 +8,8 @@ public class Player {
      *
      * @author Phuc La
      */
-    private String name;
-    private List<Territory> ownedlands;
+    private final String name;
+    private final List<Territory> ownedlands;
 
     /**
      * Constructor for the player that will play the game
@@ -42,10 +42,9 @@ public class Player {
     /**
      * Remove a territory from the player's owned lands
      * @param ter The territory to remove
-     * @return True if successful, false otherwise
      */
-    public boolean removeTerritory(Territory ter) {
-        return ownedlands.remove(ter);
+    public void removeTerritory(Territory ter) {
+        ownedlands.remove(ter);
     }
 
     /**
