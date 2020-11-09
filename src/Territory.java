@@ -30,12 +30,8 @@ public class Territory {
      * function that increments the amount of armies in the territory by numAdd as long as the number does
      * not surpass the integer canAdd
      * @param numAdd integer to add to numArmies
-     * @param canAdd integer that limits how much can be added to numArmies
      */
-    public void addArmy(int numAdd, int canAdd ){
-        if (numAdd > canAdd){
-            return;
-        }
+    public void addArmy(int numAdd){
         numArmies += numAdd;
     }
 
@@ -114,4 +110,3 @@ public class Territory {
         return name + " [" + id + "] | Owner: " + owner.getName() + " | Armies: " + numArmies + " | Adjacent Territories: " +listOfAdjacents;
     }
 }
-

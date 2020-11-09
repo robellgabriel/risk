@@ -36,25 +36,20 @@ public class Game{
 
 
     /**
+     * places a certain amount of armies into the designated territory.
      * Updates the action log in the view with what happened during place phase
      *
+     * @param mt is a hashmap of type territory for key and integer for value, places the value into
+     *           the corresponding key
      * @author Robell Gabriel and Phuc La
      */
-    public void placePhase( List<Territory> lt) {
-        List<Territory> playerLand = currentPlayer.getAllLandOwned();
-        for (int i = 0; i < playerLand.size(); i++) {
-            int k = 0;
-            Territory temp = null;
-            for (Territory terr : lt) {
-                if (playerLand.get(i).getName().equals(terr.getName())) {
-                    temp = terr;
-                    k+= 1;
-                }
-            }
-            if (temp != null) printLine("You Have Placed " + k + " armies into " + temp.getName() +
-                    " which now has " + temp.getNumArmies() + " in it");
+    public void placePhase( HashMap<Territory,Integer> mt) {
+        for (Territory terr : mt.keySet()){
+            terr.addArmy(mt.get(terr));
+            printLine(terr.getOwner().getName() + " has placed " + mt.get(terr) + " armies into " + terr.getName() +
+                    " which now has " + terr.getNumArmies() + " armies");
         }
-       updateView("Place");
+        updateView("Place");
     }
 
 
@@ -69,7 +64,7 @@ public class Game{
      */
     public void movePhase(int i, Territory toRemove, Territory toPlace) {
         toRemove.removeArmy(i);
-        toPlace.addArmy(i, i);
+        toPlace.addArmy(i);
         currentPlayer = activePlayers.get((activePlayers.indexOf(currentPlayer) + 1) % activePlayers.size());
         updateView("Move");
         printLine("You have moved " + i + " armies from " + toRemove.getName() + " to " + toPlace.getName());
@@ -95,9 +90,9 @@ public class Game{
         attackRolls.sort(Collections.reverseOrder());
         defendRolls.sort(Collections.reverseOrder());
 
-       printLine(attacking.getOwner().getName() + " is attacking " + defending.getName() + " with " + attacking.getName() + "!");
-       printLine("Attacker rolled " + attackRolls.size() + " dice: " + Arrays.toString(attackRolls.toArray()));
-       printLine("Defender rolled " + defendRolls.size() + " dice: " + Arrays.toString(defendRolls.toArray()) + "\n");
+        printLine(attacking.getOwner().getName() + " is attacking " + defending.getName() + " with " + attacking.getName() + "!");
+        printLine("Attacker rolled " + attackRolls.size() + " dice: " + Arrays.toString(attackRolls.toArray()));
+        printLine("Defender rolled " + defendRolls.size() + " dice: " + Arrays.toString(defendRolls.toArray()) + "\n");
 
         int attackLosses = 0;
         int defendLosses = 0;
@@ -319,7 +314,7 @@ public class Game{
             }
             //add random amount of armies to each territory
             for (Territory territory : activePlayers.get(i).getAllLandOwned()) {
-                territory.addArmy(armyList2.pop(), 100);
+                territory.addArmy(armyList2.pop());
             }
         }
         currentPlayer = activePlayers.get(0);

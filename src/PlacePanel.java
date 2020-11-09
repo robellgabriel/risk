@@ -10,7 +10,7 @@ import java.util.List;
  */
 public class PlacePanel extends JPanel {
     private int armiesRemaining;
-    private final List<Territory> owned = new ArrayList<>();
+    private final Map< Territory, Integer> toAdd;
 
     /**
      * Constructor for PlacePanel asking player where they want to place
@@ -26,7 +26,20 @@ public class PlacePanel extends JPanel {
             if (conqueror.isPresent() && conqueror.get().equals(currPlayer)) armiesRemaining += continent.BONUS_ARMIES;
         }
         //GUI for the place phase
+        toAdd = new HashMap<>();
         DefaultListModel<Territory> mapList = new DefaultListModel<>();
+
+        //creates a deep copy of current map to update mainmenu map but not placepanel map
+        List<Territory> menuMapList = new ArrayList<>();
+        Iterator<Territory> iterator = currPlayer.getAllLandOwned().iterator();
+        while (iterator.hasNext()){
+            Territory territory = iterator.next();
+            Territory temp = new Territory(territory.getName(), territory.getId(), territory.getAdjacentList());
+            temp.setPlayer(territory.getOwner());
+            temp.setNumArmies(territory.getNumArmies());
+            menuMapList.add(temp);
+        }
+
         mapList.addAll(currPlayer.getAllLandOwned());
         JList <Territory> map = new JList<>(mapList);
         map.setFixedCellWidth(700);
@@ -43,17 +56,25 @@ public class PlacePanel extends JPanel {
             }else{
                 if(armiesRemaining>0) {
                     Territory ter = map.getSelectedValue();
-                    ter.addArmy(1, armiesRemaining);
-                    owned.add(ter);
-                    List<Territory> playerLand = owned;
-                    for (int i = 0; i < playerLand.size(); i++) {
-                        if (playerLand.get(i).getName().equals(ter.getName())){
-                            playerLand.set(i, ter);
+                    Territory menuTer = null;
+                    ter.addArmy(1);
+
+                    for (Territory territory : menuMapList){
+                        if (territory.getName().equals(ter.getName())){
+                            menuTer = territory;
                         }
+                    }
+
+                    if (toAdd.containsKey(menuTer)) {
+                        toAdd.replace(menuTer,toAdd.get(menuTer)+1);
+                    }
+                    else{
+                        toAdd.put(menuTer,1);
                     }
                     armiesRemaining--;
                     numarmies.setText("You have " + armiesRemaining + " armies left");
                     SwingUtilities.updateComponentTreeUI(map);
+
                 }
             }
 
@@ -80,8 +101,8 @@ public class PlacePanel extends JPanel {
      * during the place phase
      * @return the list of territories that the player owned;
      */
-    public List<Territory> territoriesArmyIncreased(){
-        return owned;
+    public HashMap<Territory, Integer> territoriesArmyIncreased(){
+        return (HashMap)toAdd;
     }
 
     /**
