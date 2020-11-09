@@ -22,21 +22,13 @@
 #### Nicolas:
 - Implemented attack GUI elements, AttackPanel, and ArmySelectPanel
  
-<<<<<<< HEAD
 #### Phuc and Robell:
 - Implemented main Game GUI elements, WelcomePanel, PlayerNamePanel, and PlacePanel
 - Maintain list of territories displayed on main screen
-=======
-#### Phuc:
-- Implemented Player class
-- Implemented Game's play method with main game loop logic
-
-#### Robell:
-- Implemented Game's initialize, initializePlayer printHelp and printMap methods
->>>>>>> 829193e... small typo changes and setting up printing on actionlog
 
 #### Jacob:
 - Implemented move phase GUI elements and MovePanel
+- Split Game class into MVC
 
 ### Known Issues
 
