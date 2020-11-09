@@ -3,7 +3,6 @@ import java.util.*;
 
 import static org.junit.Assert.*;
 
-
 public class GameTest {
     Game game;
 
@@ -24,6 +23,87 @@ public class GameTest {
         assertEquals(3,testTer.getNumArmies());
     }
 
+    /**
+     * tests to see if all players have the right amount of territories and armies total
+     *
+     * @author Robell Gabriel
+     */
+    @Test
+    public void testInitialize() {
+        Game game = new Game();
+        List<String> playerNames = new ArrayList<>();
+        playerNames.add("a");
+        playerNames.add("b");
+        playerNames.add("c");
+        playerNames.add("d");
+        playerNames.add("e");
+        playerNames.add("f");
+        int totalTerr = 0;
+
+        game.initialize(2,playerNames);
+        for (Player player : game.getActivePlayers()) {
+            totalTerr += player.getAllLandOwned().size();
+            int totalArm = 0;
+            for (Territory territory : player.getAllLandOwned()){
+                totalArm += territory.getNumArmies();
+            }
+            assertEquals(50, totalArm);
+        }
+        assertEquals(42, totalTerr);
+        totalTerr = 0;
+
+        game = new Game();
+        game.initialize(3,playerNames);
+        for (Player player : game.getActivePlayers()) {
+            totalTerr += player.getAllLandOwned().size();
+            int totalArm = 0;
+            for (Territory territory : player.getAllLandOwned()){
+                totalArm += territory.getNumArmies();
+            }
+            assertEquals(35, totalArm);
+        }
+        assertEquals(42, totalTerr);
+        totalTerr = 0;
+
+        game = new Game();
+        game.initialize(4,playerNames);
+        for (Player player : game.getActivePlayers()) {
+            totalTerr += player.getAllLandOwned().size();
+            int totalArm = 0;
+            for (Territory territory : player.getAllLandOwned()){
+                totalArm += territory.getNumArmies();
+            }
+            assertEquals(30, totalArm);
+        }
+        assertEquals(42, totalTerr);
+        totalTerr = 0;
+
+        game = new Game();
+        game.initialize(5,playerNames);
+        for (Player player : game.getActivePlayers()) {
+            totalTerr += player.getAllLandOwned().size();
+            int totalArm = 0;
+            for (Territory territory : player.getAllLandOwned()){
+                totalArm += territory.getNumArmies();
+            }
+            assertEquals(25, totalArm);
+        }
+        assertEquals(42, totalTerr);
+        totalTerr = 0;
+
+        game = new Game();
+        game.initialize(6,playerNames);
+        for (Player player : game.getActivePlayers()) {
+            totalTerr += player.getAllLandOwned().size();
+            int totalArm = 0;
+            for (Territory territory : player.getAllLandOwned()){
+                totalArm += territory.getNumArmies();
+            }
+            assertEquals(20, totalArm);
+        }
+        assertEquals(42, totalTerr);
+    }
+  
     /**
      * This method test place phase when player distribute multiple armies to multiple territories
      */

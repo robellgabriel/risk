@@ -5,17 +5,25 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * The GameView for the GUI component of the game Risk, handles the graphical representation of the GameModel.
+ * This class displays the main menu for the Game
+ *
+ * @author Nicolas Tuttle, Phuc La, Robell Gabriel, Jacob Schmidt
+ */
 public class GameView extends JFrame {
     private final String[] options = {"OK"};
-    private JTextArea actionlog;
-    private DefaultMutableTreeNode mapList;
-    private JTree map;
-    private JLabel playerTurn;
-    private DefaultListModel<String> leaderBoardList;
-    private JButton attack,move,done,place;
+    private final JTextArea actionLog;
+    private final DefaultMutableTreeNode mapList;
+    private final JTree map;
+    private final JLabel playerTurn;
+    private final DefaultListModel<String> leaderBoardList;
+    private final JButton attack,move,done,place;
 
     /**
-     * construction that initialized the view of the GameModel
+     * constructor of the GameView that initializes the view of the GameModel
+     *
+     * @author Robell Gabriel and Phuc La
      */
     public GameView() {
         int result;
@@ -85,7 +93,7 @@ public class GameView extends JFrame {
         JLabel leaderBoardLabel = new JLabel("Leaderboard");
         leaderBoardLabel.setVerticalAlignment(JLabel.BOTTOM);
 
-        //Jlabel for player turn and armies remaining to place
+        //JLabel for player turn and armies remaining to place
         playerTurn = new JLabel("It is " + currentPlayer.getName() + "'s turn");
 
         //JButtons for attack, move and done
@@ -99,13 +107,13 @@ public class GameView extends JFrame {
         place.addActionListener(gc);
 
         //TextArea to show the log
-        actionlog = new JTextArea();
-        actionlog.setEditable(false);
-        actionlog.setRows(20);
-        JScrollPane actionLogScroll = new JScrollPane(actionlog);
+        actionLog = new JTextArea();
+        actionLog.setEditable(false);
+        actionLog.setRows(20);
+        JScrollPane actionLogScroll = new JScrollPane(actionLog);
         actionLogScroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
-        JLabel actionlogLabel = new JLabel("Action log");
-        actionlogLabel.setSize(10, 10);
+        JLabel actionLogLabel = new JLabel("Action log");
+        actionLogLabel.setSize(10, 10);
         //disable all buttons until place phase is done
         attack.setEnabled(false);
         move.setEnabled(false);
@@ -128,7 +136,7 @@ public class GameView extends JFrame {
         p1.add(leaderBoard, BorderLayout.CENTER);
         rightPanel.add(leaderBoardLabel);
         rightPanel.add(p1);
-        rightPanel.add(actionlogLabel);
+        rightPanel.add(actionLogLabel);
         rightPanel.add(actionLogScroll);
         rightPanel.add(playerTurn);
         add(rightPanel, BorderLayout.CENTER);
@@ -144,10 +152,13 @@ public class GameView extends JFrame {
 
     /**
      * Updates the view based on which method from the game model has called the update
+     *
      * @param calledBy is a string that contains information on which method updated the view
      * @param continents is a list that contains all the continents
-     * @param currentPlayer a Player representing whos turn it currently is
+     * @param currentPlayer a Player representing who's turn it currently is
      * @param activePlayers a list of Players that are active in the game
+     *
+     * @author Phuc La and Robell Gabriel
      */
     public void updateView(String calledBy,Map<String, Continent> continents,Player currentPlayer,List<Player> activePlayers ) {
         switch (calledBy) {
@@ -166,7 +177,6 @@ public class GameView extends JFrame {
                 attack.setEnabled(false);
                 move.setEnabled(false);
                 done.setEnabled(false);
-
                 break;
 
             case "Attack":
@@ -198,15 +208,16 @@ public class GameView extends JFrame {
     }
 
     public static void main(String[] args) {
-        GameView play = new GameView();
+        new GameView();
     }
 
     /**
      * Updates the map as the game progresses (IE: attack/move territories losing/gaining armies)
      *
      * @param mapList TreeNode containing all territories categorized by corresponding continent
-     * @param map     JTree contain mapList of territory view for mainscreen
+     * @param map     JTree contain mapList of territory view for main menu
      * @param continents a list of continents on the map
+     *
      * @author Robell Gabriel and Phuc La
      */
     public void resetMap(DefaultMutableTreeNode mapList, JTree map,Map<String, Continent> continents ) {
@@ -230,11 +241,12 @@ public class GameView extends JFrame {
      * Prints a line to the action log
      *
      * @param str The line to be printed to the action log
+     *
      * @author Nicolas Tuttle
      */
     public void printLine(String str) {
-        actionlog.append(str + "\n");
-        actionlog.setCaretPosition(actionlog.getDocument().getLength());
+        actionLog.append(str + "\n");
+        actionLog.setCaretPosition(actionLog.getDocument().getLength());
     }
 
 }

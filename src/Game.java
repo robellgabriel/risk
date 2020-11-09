@@ -1,13 +1,8 @@
-import javax.swing.*;
-import javax.swing.tree.*;
-import java.awt.*;
-import java.lang.reflect.Array;
 import java.util.*;
-import java.util.List;
 
 
 /**
- * The main game class for the game Risk. This manages all operations including game initialization,
+ * The main Game class for the game Risk and the GameModel for the GUI component. This manages all operations including game initialization,
  * player turns, and command handling. The game ends when there is one player left standing.
  *
  * @author Nicolas Tuttle, Phuc La, Robell Gabriel, Jacob Schmidt
@@ -16,24 +11,16 @@ public class Game{
     private final List<Player> activePlayers;
     private final Map<String, Continent> continents;
     private Player currentPlayer;
-    private final String[] options = {"OK"};
-
-
-    private ArrayList<GameView> gv ;
+    private final ArrayList<GameView> gameViews;
 
     /**
-     * Constructor for the Game class. Initializes the model and player info
-     * @author Phuc La and Robell Gabriel
+     * Constructor for the Game class
      */
     public Game() {
         activePlayers = new LinkedList<>();
         continents = new HashMap<>();
-        gv = new ArrayList<>();
+        gameViews = new ArrayList<>();
     }
-
-
-
-
 
     /**
      * places a certain amount of armies into the designated territory.
@@ -47,7 +34,7 @@ public class Game{
         for (Territory terr : mt.keySet()){
             terr.addArmy(mt.get(terr));
             printLine(terr.getOwner().getName() + " has placed " + mt.get(terr) + " armies into " + terr.getName() +
-                    " which now has " + terr.getNumArmies() + " armies");
+                    " which now has " + terr.getNumArmies() + " armies\n");
         }
         updateView("Place");
     }
@@ -68,18 +55,19 @@ public class Game{
         currentPlayer = activePlayers.get((activePlayers.indexOf(currentPlayer) + 1) % activePlayers.size());
         updateView("Move");
         printLine("You have moved " + i + " armies from " + toRemove.getName() + " to " + toPlace.getName());
-        printLine("Move phase is over");
+        printLine("Move phase is over\n");
 
     }
 
     /**
      * completes logic for one territory attacking another and updates the view accordingly
      *
-     * @param armyNum and int that represents the amout of armies to attack with
-     * @param attacking a territory that is attacking the territory deffending
+     * @param armyNum and int that represents the amount of armies to attack with
+     * @param attacking a territory that is attacking the territory defending
      * @param defending a territory that is defending the territory attacking
      * @param defendArmy an int that represents the amount of armies to defend with
-     * @return a boolean representing wether the attacker takes over the territory
+     * @return a boolean representing whether the attacker takes over the territory
+     *
      * @author Nicolas Tuttle
      */
     public boolean attack(int armyNum, Territory attacking, Territory defending, int defendArmy) {
@@ -107,7 +95,6 @@ public class Game{
                 attackLosses++;
             }
         }
-
         if (defending.removeArmy(defendLosses)) {
             // Defending still has units left
             attacking.removeArmy(attackLosses);
@@ -121,14 +108,15 @@ public class Game{
 
             return true;
         }
-
     }
 
     /**
      * If an attack conquers a territory this method completes the logic to move armies into territory
-     * @param attacking the terriotry whos owner conquers the territory edfending
+     *
+     * @param attacking the territory who's owner conquers the territory defending
      * @param defending the territory that is conquered by the owner of attacking
-     * @param armyNum the number of armies to move from atacking to defending
+     * @param armyNum the number of armies to move from attacking to defending
+     *
      * @author Nicolas Tuttle
      */
     public void attackWon( Territory attacking, Territory defending, int armyNum) {
@@ -139,7 +127,7 @@ public class Game{
         defendingPlayer.removeTerritory(defending);
         attacking.removeArmy(armyNum);
         defending.setNumArmies(armyNum);
-        printLine(attacking.getOwner().getName() + " has taken over " + defending.getName());
+        printLine("The defending territory lost all units and was conquered by " + attacking.getOwner().getName() + "!\n");
         //CHEAT CODE -> winner tester
             /*List<Territory> lst = new ArrayList<Territory>(defendingPlayer.getAllLandOwned());
             for(Territory ter : lst){
@@ -361,12 +349,12 @@ public class Game{
         }
     }
     private void updateView(String code){
-        for (GameView v : gv){
+        for (GameView v : gameViews){
             v.updateView(code,continents,currentPlayer,activePlayers);
         }
     }
     private void printLine(String message) {
-        for (GameView v : gv){
+        for (GameView v : gameViews){
             v.printLine(message);
         }
     }
@@ -374,7 +362,6 @@ public class Game{
     public  Player getCurrentPlayer() {
         return currentPlayer;
     }
-
     public Map<String, Continent> getContinents() {
         return continents;
     }
@@ -382,6 +369,6 @@ public class Game{
         return activePlayers;
     }
     public void addGameView(GameView view){
-        gv.add(view);
+        gameViews.add(view);
     }
 }

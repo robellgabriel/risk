@@ -2,19 +2,26 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import javax.swing.*;
 
+/**
+ * The GameController for the GUI component of the game Risk, handles the user inputs which updates the GameModel and GameView.
+ * This class prompts panels for when command buttons are clicked
+ *
+ * @author Nicolas Tuttle, Phuc La, Robell Gabriel, Jacob Schmidt
+ */
+
 public class GameController implements ActionListener {
-    private Game game;
-    private GameView gv;
+    private final Game game;
+    private final GameView gameView;
     private final String[] options = {"OK"};
 
     /**
-     * constructor for gameCOntroller class
+     * constructor for gameController class
      * @param game the game that is controlled by controller
-     * @param gv the view that represents the model that is controlled by this
+     * @param gameView the view that represents the model that is controlled by this
      */
-    public GameController(Game game,GameView gv) {
+    public GameController(Game game,GameView gameView) {
         this.game = game;
-        this.gv = gv;
+        this.gameView = gameView;
     }
 
     /**
@@ -28,21 +35,28 @@ public class GameController implements ActionListener {
         Player player = game.getCurrentPlayer();
 
         //if place button is pressed pull up a PlacePanel to get input from user and update model accordingly
-        if (button.getText().equals("Place")) {
-            int result;
-            PlacePanel plp = new PlacePanel(player, game.getContinents());
-            do {
-                result = JOptionPane.showOptionDialog(gv, plp, "Place", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
-            }
-            while (result == JOptionPane.CLOSED_OPTION || plp.getArmiesRemaining() > 0);
+        switch (button.getText()) {
+            case "Place": {
+                int result;
+                PlacePanel plp = new PlacePanel(player, game.getContinents());
+                do {
+                    result = JOptionPane.showOptionDialog(gameView,
+                            plp,
+                            "Place",
+                            JOptionPane.YES_NO_CANCEL_OPTION,
+                            JOptionPane.QUESTION_MESSAGE,
+                            null,
+                            options,
+                            options[0]);
+                }
+                while (result == JOptionPane.CLOSED_OPTION || plp.getArmiesRemaining() > 0);
 
                 game.placePhase(plp.territoriesArmyIncreased());
-
-
-        }
-        //if move button is pressed pull up a movePanel to get input from user and update model accordingly
-        else if(button.getText().equals("Move")){
-                MovePanel test = new MovePanel(player,game);
+                break;
+            }
+            //if move button is pressed pull up a movePanel to get input from user and update model accordingly
+            case "Move": {
+                MovePanel test = new MovePanel(player, game);
                 int result = JOptionPane.CLOSED_OPTION;
 
                 while (
@@ -55,7 +69,7 @@ public class GameController implements ActionListener {
                         )
                 ) {
                     result = JOptionPane.showConfirmDialog(
-                            gv,
+                            gameView,
                             test,
                             "Select a territory to move from!",
                             JOptionPane.OK_CANCEL_OPTION
@@ -64,56 +78,40 @@ public class GameController implements ActionListener {
                 if (result != JOptionPane.CANCEL_OPTION) {
                     game.movePhase(test.getArmiesToMove(), test.getMoveFrom(), test.getMoveTo());
                 }
-        }
-        //if attack button is pressed pull up a AttackPanel to get input from user and update model accordingly
-        else if(button.getText().equals("Attack")){
-            AttackPanel test = new AttackPanel(player,game);
-            int result = JOptionPane.CLOSED_OPTION;
-
-            while (
-                // If user has not selected valid territories or closed the window, reopen to prompt again
-                    result == JOptionPane.CLOSED_OPTION
-                            || (
-                            result == JOptionPane.OK_OPTION
-                                    && (test.getAttackingTerritory() == null
-                                    || test.getDefendingTerritory() == null)
-                    )
-            ) {
-                result = JOptionPane.showConfirmDialog(
-                        gv,
-                        test,
-                        "Select a territory to attack from!",
-                        JOptionPane.OK_CANCEL_OPTION
-                );
+                break;
             }
-            if (result != JOptionPane.CANCEL_OPTION) {
-                Territory defending = test.getDefendingTerritory();
-                Territory attacking = test.getAttackingTerritory();
-                result = JOptionPane.CLOSED_OPTION;
-                ArmySelectPanel dp = new ArmySelectPanel(1,defending.getNumArmies() > 1? 2 : 1);
+            //if attack button is pressed pull up a AttackPanel to get input from user and update model accordingly
+            case "Attack": {
+                AttackPanel test = new AttackPanel(player, game);
+                int result = JOptionPane.CLOSED_OPTION;
 
-                while (result == JOptionPane.CLOSED_OPTION) {
-                    result = JOptionPane.showOptionDialog(
-                            gv,
-                            dp,
-                            "Select a number of armies!",
-                            JOptionPane.OK_CANCEL_OPTION,
-                            JOptionPane.QUESTION_MESSAGE,
-                            null,
-                            options,
-                            options[0]
+                while (
+                    // If user has not selected valid territories or closed the window, reopen to prompt again
+                        result == JOptionPane.CLOSED_OPTION
+                                || (
+                                result == JOptionPane.OK_OPTION
+                                        && (test.getAttackingTerritory() == null
+                                        || test.getDefendingTerritory() == null)
+                        )
+                ) {
+                    result = JOptionPane.showConfirmDialog(
+                            gameView,
+                            test,
+                            "Select a territory to attack from!",
+                            JOptionPane.OK_CANCEL_OPTION
                     );
                 }
-                boolean won = game.attack(test.getArmyNum(), test.getAttackingTerritory(), test.getDefendingTerritory(), dp.getArmyNum());
-                if (won) {
+                if (result != JOptionPane.CANCEL_OPTION) {
+                    Territory defending = test.getDefendingTerritory();
+                    Territory attacking = test.getAttackingTerritory();
                     result = JOptionPane.CLOSED_OPTION;
-                    ArmySelectPanel transfer = new ArmySelectPanel(test.getArmyNum(), attacking.getNumArmies() - 1);
+                    ArmySelectPanel dp = new ArmySelectPanel(1, defending.getNumArmies() > 1 ? 2 : 1);
 
                     while (result == JOptionPane.CLOSED_OPTION) {
                         result = JOptionPane.showOptionDialog(
-                                gv,
-                                transfer,
-                                "Select a number of armies to transfer!",
+                                gameView,
+                                dp,
+                                "Select a number of armies!",
                                 JOptionPane.OK_CANCEL_OPTION,
                                 JOptionPane.QUESTION_MESSAGE,
                                 null,
@@ -121,14 +119,31 @@ public class GameController implements ActionListener {
                                 options[0]
                         );
                     }
-                    game.attackWon( attacking, defending, transfer.getArmyNum());
+                    boolean won = game.attack(test.getArmyNum(), attacking, defending, dp.getArmyNum());
+                    if (won) {
+                        result = JOptionPane.CLOSED_OPTION;
+                        ArmySelectPanel transfer = new ArmySelectPanel(test.getArmyNum(), attacking.getNumArmies() - 1);
+
+                        while (result == JOptionPane.CLOSED_OPTION) {
+                            result = JOptionPane.showOptionDialog(
+                                    gameView,
+                                    transfer,
+                                    "Select a number of armies to transfer!",
+                                    JOptionPane.OK_CANCEL_OPTION,
+                                    JOptionPane.QUESTION_MESSAGE,
+                                    null,
+                                    options,
+                                    options[0]
+                            );
+                        }
+                        game.attackWon(attacking, defending, transfer.getArmyNum());
+                    }
                 }
+                break;
             }
+            case "Done":
+                game.done();
+                break;
         }
-        else if (button.getText().equals("Done")){
-            game.done();
-        }
-
     }
-
 }
