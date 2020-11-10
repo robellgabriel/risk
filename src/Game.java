@@ -50,13 +50,13 @@ public class Game{
      * @author Jacob Schmidt
      */
     public void movePhase(int i, Territory toRemove, Territory toPlace) {
-        toRemove.removeArmy(i);
-        toPlace.addArmy(i);
+        if (toRemove.removeArmy(i)) {
+            toPlace.addArmy(i, i);
+            updateView("Move");
+            printLine("You have moved " + i + " armies from " + toRemove.getName() + " to " + toPlace.getName());
+            printLine("Move phase is over");
+        } else { printLine("some how u messed up tough luck"); }
         currentPlayer = activePlayers.get((activePlayers.indexOf(currentPlayer) + 1) % activePlayers.size());
-        updateView("Move");
-        printLine("You have moved " + i + " armies from " + toRemove.getName() + " to " + toPlace.getName());
-        printLine("Move phase is over\n");
-
     }
 
     /**

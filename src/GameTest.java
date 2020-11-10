@@ -1,16 +1,50 @@
 import org.junit.*;
-import java.util.*;
 
 import static org.junit.Assert.*;
 
+import java.util.*;
+
 public class GameTest {
     Game game;
+
+    @Test
+    public void TestMovePhase(){
+        game = new Game();
+        ArrayList<String> names = new ArrayList<>();
+        names.add("Subject1");
+        names.add("Patrick");
+        game.initialize(2,names);
+
+        Player p  = game.getCurrentPlayer();
+        Territory t1 = p.getAllLandOwned().get(0);
+        Territory t2 = p.getAllLandOwned().get(1);
+        int i = 4, k =9, j = 1;
+        t1.setNumArmies(k);
+        t2.setNumArmies(j);
+
+
+        game.movePhase(i, t1,t2);
+        assertEquals(t1.getNumArmies() , t2.getNumArmies());
+        assertEquals(t1.getNumArmies() + i , k);
+        assertEquals(t2.getNumArmies() - i , j);
+        assertNotEquals(p,game.getCurrentPlayer());
+
+        k = 1;
+        j = 10;
+        t1.setNumArmies(k);
+        t2.setNumArmies(j);
+        game.movePhase(i,t1,t2);
+        assertEquals(t1.getNumArmies() , k);
+        assertEquals(t2.getNumArmies()  , j);
+        assertEquals(p,game.getCurrentPlayer());
+
+    }
 
     /**
      * This method test place phase when player add all bonus armies into a single territory
      */
     @org.junit.Test
-    public void testPlacePhaseSignleTer(){
+    public void testPlacePhaseSingleTer(){
         game = new Game();
         //Testing place phase for 1 specific territory
         Territory testTer = new Territory("Alaska", "NA1", Arrays.asList("NA2", "NA6", "AS6"));
