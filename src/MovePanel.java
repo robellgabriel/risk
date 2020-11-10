@@ -5,10 +5,9 @@ import java.util.List;
 
 /**
  * this program creates a jpanel to model how a movephase in risk would lookl ike
- * @author jacob
+ * @author Jacob Schmidt
  */
-
-public class MovePanel extends JPanel{
+public class MovePanel extends JPanel {
     //create global objects that will be shown on the jframe
     private final JList<Territory> ownedTerritories;
     private final JList<Territory> ownedAdjacentTerritories;
@@ -48,7 +47,6 @@ public class MovePanel extends JPanel{
 
         });
 
-
         //set widths of  Jlists so that the important values can be read
         ownedTerritories.setFixedCellWidth(300);
         ownedAdjacentTerritories.setFixedCellWidth(300);
@@ -69,7 +67,6 @@ public class MovePanel extends JPanel{
         movePanel.add(labelPanel,BorderLayout.NORTH);
         //adding final movepanel to frame and setting the frame to true,
         this.add(movePanel);
-
     }
 
     /**
@@ -77,7 +74,7 @@ public class MovePanel extends JPanel{
      * @param listTerritories the list of territories to be filtered and converted to Jlist
      * @return JList containing all valid territores
      */
-    private JList<Territory> generateValidJList (List<Territory> listTerritories) {
+    private JList<Territory> generateValidJList(List<Territory> listTerritories) {
         ArrayList<Territory> temp = new ArrayList<>();
         for (Territory toCheck : listTerritories){
             if (toCheck.getNumArmies() > 1){
@@ -85,7 +82,7 @@ public class MovePanel extends JPanel{
             }
         }
         temp.sort(Comparator.comparing(Territory::getId));
-        return new JList<>(  temp.toArray(new Territory[0]));
+        return new JList<>(temp.toArray(new Territory[0]));
     }
 
     /**
@@ -96,7 +93,7 @@ public class MovePanel extends JPanel{
      *               by player
      * @return an array containing only valid territories
      */
-    private Territory[] generateValidArray (Game game, List<String> listTerritories, Player player) {
+    private Territory[] generateValidArray(Game game, List<String> listTerritories, Player player) {
         ArrayList<Territory> temp = new ArrayList<>();
         Territory tempTerritory;
         for (String toCheck : listTerritories){
@@ -116,6 +113,7 @@ public class MovePanel extends JPanel{
     public Territory getMoveFrom() {
         return moveFrom;
     }
+
     /**
      * getter method to return moveTo
      * @return Territory moveTo
@@ -123,6 +121,7 @@ public class MovePanel extends JPanel{
     public Territory getMoveTo() {
         return ownedAdjacentTerritories.getSelectedValue();
     }
+
     /**
      * getter method to return armiesToMove
      * @return int armiesToMove
@@ -130,6 +129,4 @@ public class MovePanel extends JPanel{
     public int getArmiesToMove() {
         return movePossibility.getValue();
     }
-
-
 }

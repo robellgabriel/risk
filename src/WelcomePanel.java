@@ -8,13 +8,12 @@ import java.awt.*;
  * @author Robell Gabriel
  */
 public class WelcomePanel extends JPanel {
-
     private final JSlider playerCount;
 
     /**
      * Constructor for WelcomePanel which asks user number of players
      */
-    public WelcomePanel(){
+    public WelcomePanel() {
         playerCount = new JSlider(2,6);
         playerCount.setPaintTicks(true);
         playerCount.setPaintLabels(true);
@@ -34,7 +33,7 @@ public class WelcomePanel extends JPanel {
      * getting total number of players
      * @return int numbers of players
      */
-    public int getPlayerCount(){
+    public int getPlayerCount() {
         return playerCount.getValue();
     }
 }

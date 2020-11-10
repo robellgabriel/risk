@@ -19,7 +19,7 @@ public class PlacePanel extends JPanel {
      * @param currPlayer PLayer object of current player
      * @param continents Hashmap of continents
      */
-    public PlacePanel(Player currPlayer, Map<String, Continent> continents){
+    public PlacePanel(Player currPlayer, Map<String, Continent> continents) {
         armiesRemaining = 3 + (currPlayer.getAllLandOwned().size()-9)/3;
         for (Continent continent : continents.values()) {
             Optional<Player> conqueror = continent.getConqueror();
@@ -74,10 +74,8 @@ public class PlacePanel extends JPanel {
                     armiesRemaining--;
                     numarmies.setText("You have " + armiesRemaining + " armies left");
                     SwingUtilities.updateComponentTreeUI(map);
-
                 }
             }
-
         });
 
         setLayout(new BorderLayout());
@@ -91,9 +89,6 @@ public class PlacePanel extends JPanel {
         p2.add(place);
         p2.add(numarmies);
         add(p2, BorderLayout.EAST);
-
-
-
     }
 
     /**
@@ -101,8 +96,8 @@ public class PlacePanel extends JPanel {
      * during the place phase
      * @return the list of territories that the player owned;
      */
-    public HashMap<Territory, Integer> territoriesArmyIncreased(){
-        return (HashMap)toAdd;
+    public HashMap<Territory, Integer> territoriesArmyIncreased() {
+        return (HashMap<Territory, Integer>)toAdd;
     }
 
     /**
@@ -110,8 +105,7 @@ public class PlacePanel extends JPanel {
      * until the number of armies reach 0
      * @return the integer that is the number of armies the player still have during the place phase.
      */
-    public int getArmiesRemaining(){
+    public int getArmiesRemaining() {
         return armiesRemaining;
     }
-
 }

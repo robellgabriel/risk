@@ -29,7 +29,7 @@ public class GameController implements ActionListener {
      * @param e the button that was pressed
      */
     @Override
-    public void actionPerformed(ActionEvent e){
+    public void actionPerformed(ActionEvent e) {
         Object o = e.getSource();
         JButton button = (JButton) o;
         Player player = game.getCurrentPlayer();

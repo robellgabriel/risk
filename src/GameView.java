@@ -59,9 +59,6 @@ public class GameView extends JFrame {
         //Initializer to get number of players, player's name, distribution of territory and armies
         game.initialize(numPlayers,playerName);
 
-
-
-
         mapList = new DefaultMutableTreeNode();
         Map<String, Continent> continents = game.getContinents();
         List<Player> activePlayers = game.getActivePlayers();
@@ -160,7 +157,7 @@ public class GameView extends JFrame {
      *
      * @author Phuc La and Robell Gabriel
      */
-    public void updateView(String calledBy,Map<String, Continent> continents,Player currentPlayer,List<Player> activePlayers ) {
+    public void updateView(String calledBy, Map<String, Continent> continents, Player currentPlayer, List<Player> activePlayers) {
         switch (calledBy) {
             case "Place":
                 resetMap(mapList, map, continents);
@@ -220,7 +217,7 @@ public class GameView extends JFrame {
      *
      * @author Robell Gabriel and Phuc La
      */
-    public void resetMap(DefaultMutableTreeNode mapList, JTree map,Map<String, Continent> continents ) {
+    public void resetMap(DefaultMutableTreeNode mapList, JTree map, Map<String, Continent> continents) {
         mapList.removeAllChildren();
         for (String id : continents.keySet()) {
             DefaultMutableTreeNode contList = new DefaultMutableTreeNode(continents.get(id).getName());
@@ -248,5 +245,4 @@ public class GameView extends JFrame {
         actionLog.append(str + "\n");
         actionLog.setCaretPosition(actionLog.getDocument().getLength());
     }
-
 }

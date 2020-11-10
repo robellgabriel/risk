@@ -7,7 +7,6 @@ import java.util.*;
  * @author Jacob Schmidt
  */
 public class Territory {
-
     private Player owner; // owner of the country
     private int numArmies = 0; //amount of armies contained in the country
     private final String name; //name to identify country by
@@ -31,7 +30,7 @@ public class Territory {
      * not surpass the integer canAdd
      * @param numAdd integer to add to numArmies
      */
-    public void addArmy(int numAdd){
+    public void addArmy(int numAdd) {
         numArmies += numAdd;
     }
 
@@ -41,7 +40,7 @@ public class Territory {
      * @param numRemove integer that represent the amount to decrement numArmies by
      * @return a boolean representing whether the method was successful
      */
-    public boolean removeArmy(int numRemove){
+    public boolean removeArmy(int numRemove) {
         if (numArmies - numRemove <= 0){
             return false;
         }
@@ -77,7 +76,7 @@ public class Territory {
      * a method used to set owner to an existing player
      * @param owner the player that will be set to owner
      */
-    public void setPlayer (Player owner){
+    public void setPlayer (Player owner) {
         this.owner = owner;
     }
 
@@ -101,7 +100,7 @@ public class Territory {
      * a method to read the list of all adjacent territories
      * @return a string representing all adjacent territory's IDs
      */
-    public List<String> getAdjacentList(){
+    public List<String> getAdjacentList() {
         return listOfAdjacents;
     }
 

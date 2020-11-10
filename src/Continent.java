@@ -55,7 +55,7 @@ public class Continent {
      * Get the amount of territories in continent
      * @return an int that is the size of territories list
      */
-    public int getTerritoriesSize(){
+    public int getTerritoriesSize() {
         return territories.size();
     }
 
@@ -63,13 +63,17 @@ public class Continent {
      * Get the list of territories in continent
      * @return a list that is all the territories
      */
-    public List<Territory> getTerritoryList() {return territories;}
+    public List<Territory> getTerritoryList() {
+        return territories;
+    }
 
     /**
      * Get name of continent
      * @return a String of continent's name
      */
-    public String getName() {return name;}
+    public String getName() {
+        return name;
+    }
 
     /**
      * Returns a String representation of this continent. The String representation consists of the

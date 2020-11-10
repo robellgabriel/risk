@@ -7,7 +7,7 @@ import java.util.*;
  *
  * @author Nicolas Tuttle, Phuc La, Robell Gabriel, Jacob Schmidt
  */
-public class Game{
+public class Game {
     private final List<Player> activePlayers;
     private final Map<String, Continent> continents;
     private Player currentPlayer;
@@ -30,7 +30,7 @@ public class Game{
      *           the corresponding key
      * @author Robell Gabriel and Phuc La
      */
-    public void placePhase( HashMap<Territory,Integer> mt) {
+    public void placePhase(HashMap<Territory, Integer> mt) {
         for (Territory terr : mt.keySet()){
             terr.addArmy(mt.get(terr));
             printLine(terr.getOwner().getName() + " has placed " + mt.get(terr) + " armies into " + terr.getName() +
@@ -38,7 +38,6 @@ public class Game{
         }
         updateView("Place");
     }
-
 
     /**
      * completes logic for moving armies from one territory to another and updates view accordingly
@@ -51,11 +50,13 @@ public class Game{
      */
     public void movePhase(int i, Territory toRemove, Territory toPlace) {
         if (toRemove.removeArmy(i)) {
-            toPlace.addArmy(i, i);
+            toPlace.addArmy(i);
             updateView("Move");
             printLine("You have moved " + i + " armies from " + toRemove.getName() + " to " + toPlace.getName());
             printLine("Move phase is over");
-        } else { printLine("some how u messed up tough luck"); }
+        } else {
+            printLine("some how u messed up tough luck");
+        }
         currentPlayer = activePlayers.get((activePlayers.indexOf(currentPlayer) + 1) % activePlayers.size());
     }
 
@@ -95,6 +96,7 @@ public class Game{
                 attackLosses++;
             }
         }
+
         if (defending.removeArmy(defendLosses)) {
             // Defending still has units left
             attacking.removeArmy(attackLosses);
@@ -103,9 +105,7 @@ public class Game{
             printLine("The defending territory lost " + defendLosses + " unit(s)! It has " + defending.getNumArmies() + " unit(s) left.\n");
             updateView("Attack");
             return false;
-
         } else {
-
             return true;
         }
     }
@@ -119,7 +119,7 @@ public class Game{
      *
      * @author Nicolas Tuttle
      */
-    public void attackWon( Territory attacking, Territory defending, int armyNum) {
+    public void attackWon(Territory attacking, Territory defending, int armyNum) {
         Player defendingPlayer = defending.getOwner();
 
         defending.setPlayer(currentPlayer);
@@ -145,7 +145,7 @@ public class Game{
     /**
      * moves the turn over to the next player
      */
-    public void done(){
+    public void done() {
         currentPlayer = activePlayers.get((activePlayers.indexOf(currentPlayer) + 1) % activePlayers.size());
         updateView("Done");
     }
@@ -190,10 +190,11 @@ public class Game{
      * Creates all territories, continents then evenly adds territories to
      * players at random and randomly adds armies to territories.
      *
+     * @param numPlayers The number of players to use
+     * @param playerName The list of players to initialize
      * @author Robell Gabriel
      */
     public void initialize(int numPlayers, List<String> playerName) {
-
         ArrayList<Integer> handleUnevenTerr4; //list of Territory total for when numPLayer=4
         ArrayList<Integer> handleUnevenTerr5; //list of Territory total for when numPLayer=5
         Stack<String> territoryID = new Stack<>(); //stack of temporary territory IDs
@@ -348,26 +349,55 @@ public class Game{
             armyList2.push(army);
         }
     }
+
+    /**
+     * Update all the views with the given code
+     * @param code The type of action that was performed
+     */
     private void updateView(String code){
         for (GameView v : gameViews){
-            v.updateView(code,continents,currentPlayer,activePlayers);
+            v.updateView(code, continents, currentPlayer, activePlayers);
         }
     }
+
+    /**
+     * Print a line to the action log
+     * @param message The message to print to the action log
+     */
     private void printLine(String message) {
         for (GameView v : gameViews){
             v.printLine(message);
         }
     }
 
-    public  Player getCurrentPlayer() {
+    /**
+     * Get the current active player
+     * @return The current player
+     */
+    public Player getCurrentPlayer() {
         return currentPlayer;
     }
+
+    /**
+     * Get the map of all continents
+     * @return The map of continents
+     */
     public Map<String, Continent> getContinents() {
         return continents;
     }
+
+    /**
+     * Get a list of all players remaining in the game
+     * @return The list of active players
+     */
     public List<Player> getActivePlayers() {
         return activePlayers;
     }
+
+    /**
+     * Add a new view to the Game
+     * @param view The view to add
+     */
     public void addGameView(GameView view){
         gameViews.add(view);
     }

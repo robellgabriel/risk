@@ -1,14 +1,14 @@
 import org.junit.*;
 
-import static org.junit.Assert.*;
-
 import java.util.*;
+
+import static org.junit.Assert.*;
 
 public class GameTest {
     Game game;
 
     @Test
-    public void TestMovePhase(){
+    public void testMovePhase() {
         game = new Game();
         ArrayList<String> names = new ArrayList<>();
         names.add("Subject1");
@@ -43,8 +43,8 @@ public class GameTest {
     /**
      * This method test place phase when player add all bonus armies into a single territory
      */
-    @org.junit.Test
-    public void testPlacePhaseSingleTer(){
+    @Test
+    public void testPlacePhaseSingleTer() {
         game = new Game();
         //Testing place phase for 1 specific territory
         Territory testTer = new Territory("Alaska", "NA1", Arrays.asList("NA2", "NA6", "AS6"));
@@ -141,8 +141,8 @@ public class GameTest {
     /**
      * This method test place phase when player distribute multiple armies to multiple territories
      */
-    @org.junit.Test
-    public void testPlacePhaseMultipleTer(){
+    @Test
+    public void testPlacePhaseMultipleTer() {
         game = new Game();
         //Testing place phase for multiple territories involved
         Territory testTer1,testTer2,testTer3;
@@ -172,4 +172,44 @@ public class GameTest {
         assertEquals(1,testTer3.getNumArmies());
     }
 
+    @Test
+    public void testAttackWon() {
+        game = new Game();
+        game.initialize(2, List.of("Patrick", "Spongebob"));
+
+        Player player1 = game.getActivePlayers().get(0);
+        Player player2 = game.getActivePlayers().get(1);
+
+        // Remove all territories from player 2
+        List<Territory> player2Land = player2.getAllLandOwned();
+        player2Land.clear();
+
+        Territory attacking = new Territory("Attacking", "ATT", List.of());
+        attacking.setPlayer(player1);
+        attacking.setNumArmies(10);
+        player1.addTerritory(attacking);
+
+        Territory defending1 = new Territory("Defending", "DEF", List.of());
+        Territory defending2 = new Territory("Defending", "DEF", List.of());
+        defending1.setPlayer(player2);
+        defending1.setNumArmies(2);
+        player2.addTerritory(defending1);
+        defending2.setPlayer(player2);
+        defending2.setNumArmies(2);
+        player2.addTerritory(defending2);
+
+        assertTrue(game.getActivePlayers().contains(player2));
+        assertEquals(player2.getAllLandOwned().size(), 2);
+
+        game.attackWon(attacking, defending1, 3);
+        assertEquals(defending1.getNumArmies(), 3);
+        assertEquals(defending1.getOwner(), player1);
+        assertTrue(player1.getAllLandOwned().contains(defending1));
+
+        game.attackWon(attacking, defending2, 3);
+        assertFalse(game.getActivePlayers().contains(player2));
+        assertEquals(defending2.getNumArmies(), 3);
+        assertEquals(defending2.getOwner(), player1);
+        assertTrue(player1.getAllLandOwned().contains(defending2));
+    }
 }

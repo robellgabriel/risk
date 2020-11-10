@@ -1,13 +1,14 @@
 import java.util.*;
+
+/**
+ * This class is part of the game "RISK"
+ *
+ * This class hold the command to create an instance of player as well as
+ * return the player name and the list of territories that the player owned
+ *
+ * @author Phuc La
+ */
 public class Player {
-    /**
-     * This class is part of the game "RISK"
-     *
-     * This class hold the command to create an instance of player as well as
-     * return the player name and the list of territories that the player owned
-     *
-     * @author Phuc La
-     */
     private final String name;
     private final List<Territory> ownedlands;
 
@@ -17,9 +18,7 @@ public class Player {
      */
     public Player(String name) {
         this.name = name;
-
         ownedlands = new LinkedList<>();
-
     }
 
     /**
@@ -35,7 +34,7 @@ public class Player {
      * player owned
      * @param ter is the new territory that will be added to the list
      */
-    public void addTerritory(Territory ter){
+    public void addTerritory(Territory ter) {
         ownedlands.add(ter);
     }
 
@@ -51,7 +50,7 @@ public class Player {
      * Return the list of lands owned by the player so far in the game
      * @return the list that contained all the land that the player owned at the moment
      */
-    public List<Territory> getAllLandOwned(){
+    public List<Territory> getAllLandOwned() {
         return ownedlands;
     }
 }

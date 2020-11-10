@@ -7,14 +7,13 @@ import java.awt.event.*;
  * @author Robell Gabriel uthor Robell Gabriel
  */
 public class PlayerNamePanel extends JPanel {
-
     private final JTextField name;
 
     /**
      * Constructor for PlayerNamePanel asking player's name
      * @param i int looping for each player
      */
-    public PlayerNamePanel(int i){
+    public PlayerNamePanel(int i) {
         name = new JTextField("Name here",10);
         name.addFocusListener(new FocusListener() {
             @Override
@@ -39,8 +38,7 @@ public class PlayerNamePanel extends JPanel {
      * getting each player's name
      * @return String player's name
      */
-    public String getPlayerName(){
+    public String getPlayerName() {
         return name.getText();
     }
-
 }
