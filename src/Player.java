@@ -10,14 +10,16 @@ import java.util.*;
  */
 public class Player {
     private final String name;
+    private final boolean AI;
     private final List<Territory> ownedlands;
 
     /**
      * Constructor for the player that will play the game
      * @param name is the name that the player will use in the game
      */
-    public Player(String name) {
+    public Player(String name, boolean AI) {
         this.name = name;
+        this.AI = AI;
         ownedlands = new LinkedList<>();
     }
 
@@ -53,4 +55,73 @@ public class Player {
     public List<Territory> getAllLandOwned() {
         return ownedlands;
     }
+
+    /**
+     * returns the amount of all land owned by player
+     * @return int amount of ownedlands
+     */
+    public int getAllLandOwnedSize() { return ownedlands.size();}
+
+    /**
+     * Checks if all territories owned by player have 1 army
+     * @return true if all territories have 1 army, false otherwise
+     */
+    public boolean allLandOwnedHas1Army(){
+        int terrWith1Army = 0;
+        for (Territory terr : ownedlands){
+            if (terr.getNumArmies()==1){
+                terrWith1Army++;
+            }
+        }
+        return terrWith1Army == ownedlands.size();
+    }
+
+    /**
+     * Checks if there's friendly territories adjacent to player's owned territories
+     * @param game current state of game
+     * @return true if at least 1 of owned territories have friendly adjacent
+     *              and owned territory has more than 1 army, false otherwise
+     */
+    public boolean allLandOwnedAdjacentIsFriendly(Game game){
+        int friendlyTerr = 0;
+        for (Territory terr : ownedlands){
+            for (String id : terr.getAdjacentList()){
+                Territory tempTerritory = game.findTerritory(id).get();
+                if (tempTerritory.getOwner().equals(this) && terr.getNumArmies()>1){
+                    friendlyTerr++;
+                    break;
+                }
+            }
+        }
+        return friendlyTerr > 0;
+    }
+
+    /**
+     * Checks if there's enemy territories adjacent to player's owned territories
+     * @param game current state of game
+     * @return true if at least 1 of owned territories have enemy adjacent
+     *              and owned territory has more than 1 army, false otherwise
+     */
+    public boolean allLandOwnedAdjacentIsEnemy(Game game){
+        int enemyTerr = 0;
+        for (Territory terr : ownedlands){
+            for (String id : terr.getAdjacentList()){
+                Territory tempTerritory = game.findTerritory(id).get();
+                if (!tempTerritory.getOwner().equals(this) && terr.getNumArmies()>1){
+                    enemyTerr++;
+                    break;
+                }
+            }
+        }
+        return enemyTerr > 0;
+    }
+
+    /**
+     * checks if player is an AI
+     * @return true if player name represents AI, false otherwise
+     */
+    public boolean isAI(){
+        return AI;
+    }
+
 }

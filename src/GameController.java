@@ -1,5 +1,6 @@
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.util.Random;
 import javax.swing.*;
 
 /**
@@ -34,6 +35,7 @@ public class GameController implements ActionListener {
         JButton button = (JButton) o;
         Player player = game.getCurrentPlayer();
 
+        Random rnd = new Random();
         //if place button is pressed pull up a PlacePanel to get input from user and update model accordingly
         switch (button.getText()) {
             case "Place": {
@@ -50,7 +52,6 @@ public class GameController implements ActionListener {
                             options[0]);
                 }
                 while (result == JOptionPane.CLOSED_OPTION || plp.getArmiesRemaining() > 0);
-
                 game.placePhase(plp.territoriesArmyIncreased());
                 break;
             }
@@ -104,22 +105,10 @@ public class GameController implements ActionListener {
                 if (result != JOptionPane.CANCEL_OPTION) {
                     Territory defending = test.getDefendingTerritory();
                     Territory attacking = test.getAttackingTerritory();
-                    result = JOptionPane.CLOSED_OPTION;
-                    ArmySelectPanel dp = new ArmySelectPanel(1, defending.getNumArmies() > 1 ? 2 : 1);
 
-                    while (result == JOptionPane.CLOSED_OPTION) {
-                        result = JOptionPane.showOptionDialog(
-                                gameView,
-                                dp,
-                                "Select a number of armies!",
-                                JOptionPane.OK_CANCEL_OPTION,
-                                JOptionPane.QUESTION_MESSAGE,
-                                null,
-                                options,
-                                options[0]
-                        );
-                    }
-                    boolean won = game.attack(test.getArmyNum(), attacking, defending, dp.getArmyNum());
+                    int armyNum = AIOrUserDefendArmies(defending);
+
+                    boolean won = game.attack(test.getArmyNum(), attacking, defending, armyNum);
                     if (won) {
                         result = JOptionPane.CLOSED_OPTION;
                         ArmySelectPanel transfer = new ArmySelectPanel(test.getArmyNum(), attacking.getNumArmies() - 1);
@@ -144,6 +133,40 @@ public class GameController implements ActionListener {
             case "Done":
                 game.done();
                 break;
+        }
+    }
+
+    /**
+     * Determines the amount of armies defending territory's owner wants to use,
+     * depending if owner is the User or AI
+     * @param defending Territory owned by defending player
+     * @return int the amount of armies User/AI wants to defend territory with
+     */
+    public int AIOrUserDefendArmies(Territory defending){
+        //opens up panels if player defending territory isn't an AI
+        if (!defending.getOwner().isAI()){
+            ArmySelectPanel dp = new ArmySelectPanel(1, defending.getNumArmies() > 1 ? 2 : 1);
+            int result = JOptionPane.CLOSED_OPTION;
+
+            while (result == JOptionPane.CLOSED_OPTION) {
+                result = JOptionPane.showOptionDialog(
+                        gameView,
+                        dp,
+                        defending.getOwner().getName()+", select a number of armies to defend!",
+                        JOptionPane.OK_CANCEL_OPTION,
+                        JOptionPane.QUESTION_MESSAGE,
+                        null,
+                        options,
+                        options[0]
+                );
+            }
+            return dp.getArmyNum();
+        }else{
+            //defend with random amount of armies for AI
+            Random rnd = new Random();
+            int min = 1;
+            int max = defending.getNumArmies() > 1 ? 2 : 1;
+            return rnd.nextInt(max + 1 - min) + min;
         }
     }
 }

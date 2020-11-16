@@ -20,7 +20,7 @@ public class PlacePanel extends JPanel {
      * @param continents Hashmap of continents
      */
     public PlacePanel(Player currPlayer, Map<String, Continent> continents) {
-        armiesRemaining = 3 + (currPlayer.getAllLandOwned().size()-9)/3;
+        armiesRemaining = 3 + (currPlayer.getAllLandOwnedSize()-9)/3;
         for (Continent continent : continents.values()) {
             Optional<Player> conqueror = continent.getConqueror();
             if (conqueror.isPresent() && conqueror.get().equals(currPlayer)) armiesRemaining += continent.BONUS_ARMIES;
@@ -50,6 +50,8 @@ public class PlacePanel extends JPanel {
 
 
         map.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+
         place.addActionListener(e->{
             if(map.getSelectedValue()==null){
                 JOptionPane.showMessageDialog(this,"You have not specify which territory you want to add armies to.");
@@ -77,6 +79,29 @@ public class PlacePanel extends JPanel {
                 }
             }
         });
+
+        //places armies to territories with all inputs at random for AI
+        if (currPlayer.isAI()){
+            Random rnd = new Random();
+            int rng;
+            while (armiesRemaining>0){
+                rng = rnd.nextInt(menuMapList.size());
+                Territory menuTer = menuMapList.get(rng);
+                Territory ter = currPlayer.getAllLandOwned().get(rng);
+
+                int min = 1;
+                int max = armiesRemaining;
+                rng = rnd.nextInt(max + 1 - min) + min;
+                if (toAdd.containsKey(menuTer)) {
+                    toAdd.replace(menuTer,toAdd.get(menuTer)+rng);
+                }else{
+                    toAdd.put(menuTer,rng);
+                }
+                ter.addArmy(rng);
+                armiesRemaining -= rng;
+            }
+        }
+
 
         setLayout(new BorderLayout());
         JPanel p1 = new JPanel();

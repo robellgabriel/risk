@@ -1,9 +1,9 @@
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.*;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * The GameView for the GUI component of the game Risk, handles the graphical representation of the GameModel.
@@ -26,38 +26,59 @@ public class GameView extends JFrame {
      * @author Robell Gabriel and Phuc La
      */
     public GameView() {
-        int result;
-        int numPlayers;
-        List<String> playerName = new ArrayList<>();
+        super("RISK!");
 
         //welcome panel of risk game
         WelcomePanel wp = new WelcomePanel();
+        int result;
         do {
             result = JOptionPane.showOptionDialog(this, wp, "Welcome",
                     JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
                     null, options, options[0]);
         }
         while (result == JOptionPane.CLOSED_OPTION );
-        numPlayers = wp.getPlayerCount();
+        int numPlayers = wp.getPlayerCount();
 
         //PlayerName panel of risk game
+        Map<String, Boolean> playerNames = new HashMap<>();
+        boolean continueLoop = false;
         for (int i = 0; i < numPlayers; i++) {
             PlayerNamePanel pmp = new PlayerNamePanel(i);
             do {
                 result = JOptionPane.showOptionDialog(
-                        this, pmp, "Keep Name Short",
+                        this, pmp, "Player Names",
                         JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
                         null, options, options[0]);
-            } while (result == JOptionPane.CLOSED_OPTION || pmp.getPlayerName().isBlank()
-                    || pmp.getPlayerName().length() > 15 || pmp.getPlayerName().equals("Name here"));
-            playerName.add(pmp.getPlayerName());
+
+                //checks if name is already used
+                for (String nameCheck : playerNames.keySet()){
+                    if (nameCheck.toLowerCase().equals(pmp.getPlayerName().toLowerCase())){
+                        continueLoop = true;
+                        JOptionPane.showMessageDialog(pmp,"Name is already used");
+                        break;
+                    }
+                }
+
+                //checks if name is too long
+                if (pmp.getPlayerName().length() > 15){
+                    continueLoop = true;
+                    JOptionPane.showMessageDialog(pmp,"Name is too long (15 characters max)");
+                }
+            } while (result == JOptionPane.CLOSED_OPTION || pmp.getPlayerName().isBlank() || pmp.getPlayerName().equals("Name here"));
+
+            if (continueLoop){
+                continueLoop=false;
+                i--;
+                continue;
+            }
+            playerNames.put(pmp.getPlayerName(),pmp.isAI());
         }
 
         Game game  = new Game();
         game.addGameView(this);
 
         //Initializer to get number of players, player's name, distribution of territory and armies
-        game.initialize(numPlayers,playerName);
+        game.initialize(playerNames);
 
         mapList = new DefaultMutableTreeNode();
         Map<String, Continent> continents = game.getContinents();
@@ -84,7 +105,7 @@ public class GameView extends JFrame {
         //JList of player leaderboard
         leaderBoardList = new DefaultListModel<>();
         for (Player player : activePlayers) {
-            leaderBoardList.addElement(player.getName() + " owns " + player.getAllLandOwned().size() + " territories");
+            leaderBoardList.addElement(player.getName() + " owns " + player.getAllLandOwnedSize() + " territories");
         }
         JList<String> leaderBoard = new JList<>(leaderBoardList);
         JLabel leaderBoardLabel = new JLabel("Leaderboard");
@@ -145,6 +166,10 @@ public class GameView extends JFrame {
         this.setSize(1200, 600);
         this.setVisible(true);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        if (game.getCurrentPlayer().isAI()){
+            game.AITurn(17,20, this);
+        }
     }
 
     /**
@@ -177,20 +202,21 @@ public class GameView extends JFrame {
                 break;
 
             case "Attack":
-                int result;
                 resetMap(mapList, map, continents);
                 leaderBoardList.removeAllElements();
-                for (Player player : activePlayers) {
-                    leaderBoardList.addElement(player.getName() + " owns " + player.getAllLandOwned().size() + " territories");
+                List<Player> sortedPlayer = new ArrayList<>(activePlayers);
+                sortedPlayer.sort(Comparator.comparing(Player::getAllLandOwnedSize).reversed());
+                for (Player player : sortedPlayer) {
+                    leaderBoardList.addElement(player.getName() + " owns " + player.getAllLandOwnedSize() + " territories");
                 }
                 if (activePlayers.size() == 1) {
-                    do {
-                        result = JOptionPane.showOptionDialog(this, "Congratulations " + currentPlayer.getName() + ". You are the winner!!!", "Winner",
-                                JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
-                                null, options, options[0]);
-                    }
-                    while (result == JOptionPane.CLOSED_OPTION);
-                    this.dispose();
+                    JOptionPane.showOptionDialog(this, "Congratulations " + currentPlayer.getName() + ". You are the winner!!!", "Winner",
+                                                JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
+                                                null, options, options[0]);
+                    place.setEnabled(false);
+                    attack.setEnabled(false);
+                    move.setEnabled(false);
+                    done.setEnabled(false);
                 }
                 break;
 

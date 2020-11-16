@@ -10,10 +10,10 @@ public class GameTest {
     @Test
     public void testMovePhase() {
         game = new Game();
-        ArrayList<String> names = new ArrayList<>();
-        names.add("Subject1");
-        names.add("Patrick");
-        game.initialize(2,names);
+        Map<String, Boolean> names = new HashMap<>();
+        names.put("Subject1",false);
+        names.put("Patrick",false);
+        game.initialize(names);
 
         Player p  = game.getCurrentPlayer();
         Territory t1 = p.getAllLandOwned().get(0);
@@ -48,7 +48,7 @@ public class GameTest {
         game = new Game();
         //Testing place phase for 1 specific territory
         Territory testTer = new Territory("Alaska", "NA1", Arrays.asList("NA2", "NA6", "AS6"));
-        Player testPlayer = new Player("a");
+        Player testPlayer = new Player("a",false);
         testPlayer.addTerritory(testTer);
         testTer.setPlayer(testPlayer);
         HashMap<Territory,Integer> mt = new HashMap<>();
@@ -64,19 +64,16 @@ public class GameTest {
      */
     @Test
     public void testInitialize() {
-        Game game = new Game();
-        List<String> playerNames = new ArrayList<>();
-        playerNames.add("a");
-        playerNames.add("b");
-        playerNames.add("c");
-        playerNames.add("d");
-        playerNames.add("e");
-        playerNames.add("f");
+        game = new Game();
+        Map<String, Boolean> playerNames = new HashMap<>();
+        playerNames.put("a",false);
+        playerNames.put("b",false);
+
         int totalTerr = 0;
 
-        game.initialize(2,playerNames);
+        game.initialize(playerNames);
         for (Player player : game.getActivePlayers()) {
-            totalTerr += player.getAllLandOwned().size();
+            totalTerr += player.getAllLandOwnedSize();
             int totalArm = 0;
             for (Territory territory : player.getAllLandOwned()){
                 totalArm += territory.getNumArmies();
@@ -86,10 +83,11 @@ public class GameTest {
         assertEquals(42, totalTerr);
         totalTerr = 0;
 
+        playerNames.put("c",false);;
         game = new Game();
-        game.initialize(3,playerNames);
+        game.initialize(playerNames);
         for (Player player : game.getActivePlayers()) {
-            totalTerr += player.getAllLandOwned().size();
+            totalTerr += player.getAllLandOwnedSize();
             int totalArm = 0;
             for (Territory territory : player.getAllLandOwned()){
                 totalArm += territory.getNumArmies();
@@ -99,10 +97,11 @@ public class GameTest {
         assertEquals(42, totalTerr);
         totalTerr = 0;
 
+        playerNames.put("d",false);
         game = new Game();
-        game.initialize(4,playerNames);
+        game.initialize(playerNames);
         for (Player player : game.getActivePlayers()) {
-            totalTerr += player.getAllLandOwned().size();
+            totalTerr += player.getAllLandOwnedSize();
             int totalArm = 0;
             for (Territory territory : player.getAllLandOwned()){
                 totalArm += territory.getNumArmies();
@@ -112,10 +111,11 @@ public class GameTest {
         assertEquals(42, totalTerr);
         totalTerr = 0;
 
+        playerNames.put("e",false);
         game = new Game();
-        game.initialize(5,playerNames);
+        game.initialize(playerNames);
         for (Player player : game.getActivePlayers()) {
-            totalTerr += player.getAllLandOwned().size();
+            totalTerr += player.getAllLandOwnedSize();
             int totalArm = 0;
             for (Territory territory : player.getAllLandOwned()){
                 totalArm += territory.getNumArmies();
@@ -125,10 +125,11 @@ public class GameTest {
         assertEquals(42, totalTerr);
         totalTerr = 0;
 
+        playerNames.put("f",false);
         game = new Game();
-        game.initialize(6,playerNames);
+        game.initialize(playerNames);
         for (Player player : game.getActivePlayers()) {
-            totalTerr += player.getAllLandOwned().size();
+            totalTerr += player.getAllLandOwnedSize();
             int totalArm = 0;
             for (Territory territory : player.getAllLandOwned()){
                 totalArm += territory.getNumArmies();
@@ -151,7 +152,7 @@ public class GameTest {
         testTer2 = new Territory("Great Britain (Great Britain & Ireland)", "EU1", Arrays.asList("EU2", "EU3", "EU4", "EU7"));
         testTer3 = new Territory("Afghanistan", "AS1", Arrays.asList("AS2", "AS3", "AS7", "AS11", "EU6"));
         //Create player who will own the territories
-        Player testPlayer = new Player("a");
+        Player testPlayer = new Player("a",false);
         //Add the territories to the player own list
         testPlayer.addTerritory(testTer1);
         testPlayer.addTerritory(testTer2);
@@ -175,7 +176,10 @@ public class GameTest {
     @Test
     public void testAttackWon() {
         game = new Game();
-        game.initialize(2, List.of("Patrick", "Spongebob"));
+        Map<String, Boolean> names = new HashMap<>();
+        names.put("Patrick",false);
+        names.put("Spongebob",false);
+        game.initialize(names);
 
         Player player1 = game.getActivePlayers().get(0);
         Player player2 = game.getActivePlayers().get(1);
@@ -199,7 +203,7 @@ public class GameTest {
         player2.addTerritory(defending2);
 
         assertTrue(game.getActivePlayers().contains(player2));
-        assertEquals(player2.getAllLandOwned().size(), 2);
+        assertEquals(player2.getAllLandOwnedSize(), 2);
 
         game.attackWon(attacking, defending1, 3);
         assertEquals(defending1.getNumArmies(), 3);

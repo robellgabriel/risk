@@ -4,17 +4,17 @@ import java.util.*;
 import java.util.List;
 
 /**
- * this program creates a jpanel to model how a movephase in risk would lookl ike
+ * this program creates a jpanel to model how a movephase in risk would look like
  * @author Jacob Schmidt
  */
 public class MovePanel extends JPanel {
     //create global objects that will be shown on the jframe
-    private final JList<Territory> ownedTerritories;
-    private final JList<Territory> ownedAdjacentTerritories;
+    private final JList<Territory> ownedTerritories, ownedAdjacentTerritories;
     private final JSlider movePossibility;
 
     //create global variables that other classes will be able to access through get method
-    private Territory moveFrom;
+    private Territory moveFrom, moveTo;
+    private int armiesToMove;
 
     public MovePanel(Player player, Game game) {
         //initialize all JPanels
@@ -25,14 +25,17 @@ public class MovePanel extends JPanel {
         //initialize all JComponents that are not containers
 
         //initialize global JComponents
-        ownedTerritories = generateValidJList(player.getAllLandOwned());
+        DefaultListModel<Territory> ownedList = new DefaultListModel<>();
+        ownedList.addAll(generateValidList(game, player));
+        ownedTerritories = new JList<>(ownedList);
         ownedAdjacentTerritories = new JList<>();
         movePossibility = new JSlider();
         movePossibility.setSnapToTicks(true);
         movePossibility.setMajorTickSpacing(1);
         movePossibility.setEnabled(false);
 
-        /*
+
+            /*
         create action listener for the JList ownedTerritories such that when a territory is selected
         a second JList is created from the selected territories adjacent list, the movePossibility slider
         is enables with possible value ranging from the amounts of armies that can be moved out
@@ -44,8 +47,28 @@ public class MovePanel extends JPanel {
             movePossibility.setPaintLabels(true);
             movePossibility.setMinimum(1);
             movePossibility.setMaximum(moveFrom.getNumArmies()-1);
-
         });
+
+        //moves units between territories with all inputs at random, for AI
+        if (player.isAI()){
+            Random rnd = new Random();
+            int rng;
+
+            List<Territory> playerTerrs = new ArrayList<>(generateValidList(game, player));
+            rng = rnd.nextInt(playerTerrs.size());
+            moveFrom = playerTerrs.get(rng);
+
+            Territory[] adjacentTerrs= generateValidArray(game, moveFrom.getAdjacentList(),player);
+            rng = rnd.nextInt(adjacentTerrs.length);
+            moveTo = adjacentTerrs[rng];
+
+            int min = 1;
+            int max = moveFrom.getNumArmies()-1;
+            rng = rnd.nextInt(max + 1 - min) + min;
+            armiesToMove = rng;
+        }
+
+
 
         //set widths of  Jlists so that the important values can be read
         ownedTerritories.setFixedCellWidth(300);
@@ -70,19 +93,25 @@ public class MovePanel extends JPanel {
     }
 
     /**
-     * Helper method to create a jlist with all valid territories
-     * @param listTerritories the list of territories to be filtered and converted to Jlist
-     * @return JList containing all valid territores
+     * Helper method to create a list with all valid territories
+     * @param game the game that is used to search for territories by id string from listTerritories
+     * @param player player used to check ownership and make sure the array given only contains territories owned
+     *               by player
+     * @return List containing all valid territores
      */
-    private JList<Territory> generateValidJList(List<Territory> listTerritories) {
+    private List<Territory> generateValidList(Game game, Player player) {
         ArrayList<Territory> temp = new ArrayList<>();
-        for (Territory toCheck : listTerritories){
-            if (toCheck.getNumArmies() > 1){
-                temp.add(toCheck);
+        for (Territory terr : player.getAllLandOwned()){
+            for (String id : terr.getAdjacentList()){
+                Territory tempTerritory = game.findTerritory(id).get();
+                if (tempTerritory.getOwner().equals(player) && terr.getNumArmies() > 1){
+                    temp.add(terr);
+                    break;
+                }
             }
         }
         temp.sort(Comparator.comparing(Territory::getId));
-        return new JList<>(temp.toArray(new Territory[0]));
+        return temp;
     }
 
     /**
@@ -119,7 +148,11 @@ public class MovePanel extends JPanel {
      * @return Territory moveTo
      */
     public Territory getMoveTo() {
-        return ownedAdjacentTerritories.getSelectedValue();
+        if (ownedAdjacentTerritories.isSelectionEmpty()){
+            return moveTo;
+        }else{
+            return ownedAdjacentTerritories.getSelectedValue();
+        }
     }
 
     /**
@@ -127,6 +160,10 @@ public class MovePanel extends JPanel {
      * @return int armiesToMove
      */
     public int getArmiesToMove() {
-        return movePossibility.getValue();
+        if (!movePossibility.isEnabled()){
+            return armiesToMove;
+        }else{
+            return movePossibility.getValue();
+        }
     }
 }
