@@ -14,12 +14,12 @@ public class WelcomePanel extends JPanel {
      * Constructor for WelcomePanel which asks user number of players
      */
     public WelcomePanel() {
-        playerCount = new JSlider(2,6);
+        playerCount = new JSlider(2, 6);
         playerCount.setPaintTicks(true);
         playerCount.setPaintLabels(true);
         playerCount.setMajorTickSpacing(1);
 
-        JLabel labelTitle = new JLabel("Welcome to the game Risk!",JLabel.CENTER);
+        JLabel labelTitle = new JLabel("Welcome to the game Risk!", JLabel.CENTER);
         JLabel askNumPlayers = new JLabel("Choose number of players:");
         askNumPlayers.setVerticalAlignment(JLabel.BOTTOM);
 

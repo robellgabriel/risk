@@ -1,7 +1,5 @@
-import javax.swing.*;
 import java.util.*;
 import java.util.stream.Collectors;
-
 
 /**
  * The main Game class for the game Risk and the GameModel for the GUI component. This manages all operations including game initialization,
@@ -14,6 +12,23 @@ public class Game {
     private final Map<String, Continent> continents;
     private Player currentPlayer;
     private final ArrayList<GameView> gameViews;
+    private boolean isFirstTurn;
+
+    /**
+     * The threshold at which the AI will switch from attack to move phase
+     * AI_THRESHOLD must be between 0 and AI_MAX - 1, inclusive
+     *
+     * Probabilities:
+     * Attack = AI_THRESHOLD / AI_MAX
+     * Done = 1 / AI_MAX
+     * Move = (AI_MAX - AI_THRESHOLD - 1) / AI_MAX
+     */
+    public static final int AI_THRESHOLD = 17;
+
+    /**
+     * The number of outcomes the AI RNG can select from
+     */
+    public static final int AI_MAX = 20;
 
     /**
      * Constructor for the Game class
@@ -22,21 +37,25 @@ public class Game {
         activePlayers = new LinkedList<>();
         continents = new HashMap<>();
         gameViews = new ArrayList<>();
+        isFirstTurn = true;
     }
 
     /**
      * places a certain amount of armies into the designated territory.
      * Updates the action log in the view with what happened during place phase
      *
-     * @param mt is a hashmap of type territory for key and integer for value, places the value into
+     * @param mt is a hashmap of type string for key (Territory ID) and integer for value, places the value into
      *           the corresponding key
      * @author Robell Gabriel and Phuc La
      */
-    public void placePhase(HashMap<Territory, Integer> mt) {
-        for (Territory terr : mt.keySet()){
-            terr.addArmy(mt.get(terr));
-            printLine(terr.getOwner().getName() + " has placed " + mt.get(terr) + " armies into " + terr.getName() +
-                    " which now has " + terr.getNumArmies() + " armies\n");
+    public void placePhase(Map<String, Integer> mt) {
+        for (String tid : mt.keySet()) {
+            findTerritory(tid).ifPresent(territory -> {
+                territory.addArmy(mt.get(tid));
+                printLine(territory.getOwner().getName() + " has placed " + mt.get(tid) + " armies into " + territory.getName() +
+                        " which now has " + territory.getNumArmies() + " armies\n");
+            });
+
         }
         updateView("Place");
     }
@@ -58,8 +77,12 @@ public class Game {
         } else {
             printLine("some how u messed up tough luck");
         }
-        currentPlayer = activePlayers.get((activePlayers.indexOf(currentPlayer) + 1) % activePlayers.size());
         updateView("Move");
+        if (isFirstTurn && currentPlayer.isAI()) {
+            done();
+        } else {
+            passTurn();
+        }
     }
 
     /**
@@ -152,9 +175,20 @@ public class Game {
     }
 
     /**
-     * moves the turn over to the next player
+     * Initiates AI turn if necessary
      */
     public void done() {
+        isFirstTurn = false;
+        passTurn();
+        while (currentPlayer.isAI() && activePlayers.size() > 1) {
+            AITurn();
+        }
+    }
+
+    /**
+     * moves the turn over to the next player
+     */
+    private void passTurn() {
         printLine(currentPlayer.getName() + " has ended their turn\n");
         currentPlayer = activePlayers.get((activePlayers.indexOf(currentPlayer) + 1) % activePlayers.size());
         updateView("Done");
@@ -364,50 +398,84 @@ public class Game {
     /**
      * Handles all commands (Place, Attack, Move, Done) for AI,
      * being chosen at random based off threshold in max range
-     * @param threshold int limit increasing/decreasing chances of commands happening
-     * @param max int range player command is chosen from
-     * @param gameView GameView used when defend panel prompt if AI attacking User
      */
-    public void AITurn(int threshold, int max, GameView gameView){
+    public void AITurn() {
+        updateView("Disable");
         Random rnd = new Random();
 
-        PlacePanel plp = new PlacePanel(currentPlayer, continents);
-        placePhase(plp.territoriesArmyIncreased());
+        // Place phase
+        int armiesRemaining = Math.max(3, currentPlayer.getAllLandOwnedSize() / 3);
+        for (Continent continent : continents.values()) {
+            Optional<Player> conqueror = continent.getConqueror();
+            if (conqueror.isPresent() && conqueror.get().equals(currentPlayer)) armiesRemaining += continent.BONUS_ARMIES;
+        }
+
+        List<Territory> landWithAdjacentEnemy = currentPlayer.getLandWithAdjacentEnemy(this);
+        HashMap<String, Integer> toAdd = new HashMap<>();
+        while (armiesRemaining > 0) {
+            Territory ter = landWithAdjacentEnemy.get(rnd.nextInt(landWithAdjacentEnemy.size()));
+            int toPlace = rnd.nextInt(armiesRemaining) + 1;
+            if (toAdd.containsKey(ter.getId())) {
+                toPlace += toAdd.get(ter.getId());
+            }
+            toAdd.put(ter.getId(), toPlace);
+            armiesRemaining -= toPlace;
+        }
+        placePhase(toAdd);
 
         //runs out all commands in a loop at random
-        while(true){
-            int rng = rnd.nextInt(max)+1;
-            //done
-            if (rng==threshold || currentPlayer.allLandOwnedHas1Army()){
-                done();
-                break;
-            //move
-            }else if (rng > threshold && currentPlayer.allLandOwnedAdjacentIsFriendly(this)){
-                MovePanel mp = new MovePanel(currentPlayer, this);
-                movePhase(mp.getArmiesToMove(), mp.getMoveFrom(), mp.getMoveTo());
-                break;
-            //attack
-            }else if (currentPlayer.allLandOwnedAdjacentIsEnemy(this)){
-                AttackPanel ap = new AttackPanel(currentPlayer, this);
-                Territory defending = ap.getDefendingTerritory();
-                Territory attacking = ap.getAttackingTerritory();
-                int minRNG;
-                int maxRNG;
-                int result = JOptionPane.CLOSED_OPTION;
+        int rng = rnd.nextInt(AI_MAX);
+        while (rng != AI_THRESHOLD && !currentPlayer.allLandOwnedHas1Army()) {
+            if (rng > AI_THRESHOLD && currentPlayer.allLandOwnedAdjacentIsFriendly(this)) {
+                // Move phase
+                List<Territory> playerTerrs = currentPlayer.getLandWithAdjacentAlly(this)
+                        .stream()
+                        .filter(territory -> territory.getNumArmies() > 1)
+                        .collect(Collectors.toList());
 
-                GameController gc = new GameController(this, gameView);
-                int armyNum = gc.AIOrUserDefendArmies(defending);
+                rng = rnd.nextInt(playerTerrs.size());
+                Territory moveFrom;
+                do {
+                    moveFrom = playerTerrs.get(rng);
+                } while (moveFrom.getNumArmies() < 2);
 
-                if (attack(ap.getArmyNum(), attacking, defending, armyNum)) {
-                    //transfer random amount of armies for AI
-                    minRNG = ap.getArmyNum();
-                    maxRNG = attacking.getNumArmies() - 1;
-                    armyNum = rnd.nextInt(maxRNG + 1 - minRNG) + minRNG;
-                    if (attackWon(attacking, defending, armyNum)){
-                        break;
+                List<Territory> adjacentTerrs = moveFrom.getAdjacentFriendly(this);
+                rng = rnd.nextInt(adjacentTerrs.size());
+                Territory moveTo = adjacentTerrs.get(rng);
+
+                int armiesToMove = rnd.nextInt(moveFrom.getNumArmies() - 1) + 1;
+                movePhase(armiesToMove, moveFrom, moveTo);
+                return;
+            } else if (currentPlayer.allLandOwnedAdjacentIsEnemy(this)) {
+                // Attack
+                List<Territory> playerTerrs = currentPlayer.getLandWithAdjacentEnemy(this)
+                        .stream()
+                        .filter(territory -> territory.getNumArmies() > 1)
+                        .collect(Collectors.toList());
+                Territory attacking = playerTerrs.get(rnd.nextInt(playerTerrs.size()));
+
+                List<Territory> adjacentTerrs = attacking.getAdjacentEnemy(this);
+                Territory defending = adjacentTerrs.get(rnd.nextInt(adjacentTerrs.size()));
+
+                int max = Math.min(attacking.getNumArmies() - 1, 3);
+                int attackArmyNum = rnd.nextInt(max) + 1;
+                int defendArmyNum = GameController.AIOrUserDefendArmies(defending);
+
+                if (attack(attackArmyNum, attacking, defending, defendArmyNum)) {
+                    // Transfer random amount of armies for AI
+                    int transferNum = rnd.nextInt(attacking.getNumArmies() - attackArmyNum) + attackArmyNum;
+                    if (attackWon(attacking, defending, transferNum)){
+                        // AI has won the game
+                        return;
                     }
                 }
             }
+            rng = rnd.nextInt(AI_MAX);
+        }
+        if (isFirstTurn) {
+            done();
+        } else {
+            passTurn();
         }
     }
 
@@ -419,9 +487,6 @@ public class Game {
     private void updateView(String code){
         for (GameView gv : gameViews){
             gv.updateView(code, continents, currentPlayer, activePlayers);
-            if (currentPlayer.isAI() && (code.equals("Done") || code.equals("Move"))){
-                AITurn(17,20, gv);
-            }
         }
     }
 

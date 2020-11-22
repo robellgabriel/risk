@@ -104,6 +104,37 @@ public class Territory {
         return listOfAdjacents;
     }
 
+    /**
+     * get a list of friendly adjacent territories
+     * @param gameState the game that is used to search for territories by id string from listTerritories
+     * @return a list containing friendly adjacent territories
+     */
+    public List<Territory> getAdjacentFriendly(Game gameState) {
+        return getAdjacentFriendlyOrEnemy(gameState, true);
+    }
+
+    /**
+     * get a list of enemy adjacent territories
+     * @param gameState the game that is used to search for territories by id string from listTerritories
+     * @return a list containing enemy adjacent territories
+     */
+    public List<Territory> getAdjacentEnemy(Game gameState) {
+        return getAdjacentFriendlyOrEnemy(gameState, false);
+    }
+
+    private List<Territory> getAdjacentFriendlyOrEnemy(Game gameState, boolean getFriendly) {
+        ArrayList<Territory> output = new ArrayList<>();
+        for (String toCheck : listOfAdjacents){
+            gameState.findTerritory(toCheck).ifPresent(territory -> {
+                if ((territory.getOwner() == owner) == getFriendly) {
+                    output.add(territory);
+                }
+            });
+        }
+        output.sort(Comparator.comparing(Territory::getId));
+        return output;
+    }
+
     @Override
     public String toString() {
         return name + " [" + id + "] | Owner: " + owner.getName() + " | Armies: " + numArmies + " | Adjacent Territories: " +listOfAdjacents;

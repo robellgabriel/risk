@@ -1,7 +1,5 @@
 import javax.swing.*;
 import java.awt.*;
-import java.util.*;
-import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -14,9 +12,6 @@ public class AttackPanel extends JPanel {
     private final JList<Territory> ownedList, adjacentList;
     private final JSlider armySlider;
 
-    private Territory attackTerr, defendTerr;
-    private int armyNum;
-
     /**
      * Constructor for class AttackPanel. Initializes all JLists with information from the attacking player
      * and wires up all the relevant listeners.
@@ -26,26 +21,13 @@ public class AttackPanel extends JPanel {
     public AttackPanel(Player attacker, Game game) {
         DefaultListModel<Territory> ownedTerritories = new DefaultListModel<>();
 
-        //adds territory from attacker's list if has an adjacent territory that's an enemy
-        List<Territory> tempList = new ArrayList<>();
-        for (Territory terr : attacker.getAllLandOwned()){
-            for (String id : terr.getAdjacentList()) {
-                Territory territory = game.findTerritory(id).get();
-                if (!territory.getOwner().equals(attacker)){
-                    tempList.add(terr);
-                    break;
-                }
-            }
-        }
-
-        // Get all land owned by attacker with more than 1 unit, sorted by territory ID
-        List<Territory> attackerLand = tempList
-                                        .stream()
-                                        .filter(p -> p.getNumArmies() > 1)
-                                        .sorted(Comparator.comparing(Territory::getId))
-                                        .collect(Collectors.toList());
-
-        ownedTerritories.addAll(attackerLand);
+        // Get all land owned by attacker with more than 1 unit, and an adjacent enemy territory
+        ownedTerritories.addAll(
+                attacker.getLandWithAdjacentEnemy(game)
+                        .stream()
+                        .filter(territory -> territory.getNumArmies() > 1)
+                        .collect(Collectors.toList())
+        );
 
         ownedList = new JList<>(ownedTerritories);
         ownedList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -64,46 +46,14 @@ public class AttackPanel extends JPanel {
 
 
         ownedList.addListSelectionListener(e -> {
-            attackTerr = ownedList.getSelectedValue();
+            Territory attackTerr = ownedList.getSelectedValue();
             int maxArmies = Math.min(attackTerr.getNumArmies() - 1, 3);
             armySlider.setEnabled(maxArmies > 0);
             armySlider.setMaximum(armySlider.isEnabled() ? maxArmies : 1);
             // Clear all entries to replace with new territories
             adjacentTerritories.removeAllElements();
-            for (String id : attackTerr.getAdjacentList()) {
-                // Add territory to list of adjacents if found and is not owned by attacker
-                game.findTerritory(id).ifPresent(territory -> {
-                    if (!territory.getOwner().equals(attacker)) adjacentTerritories.addElement(territory);
-                });
-            }
+            adjacentTerritories.addAll(attackTerr.getAdjacentEnemy(game));
         });
-
-        //attacks a territory with all inputs at random for AI
-        if (attacker.isAI()){
-            Random rnd = new Random();
-            int rng;
-
-            List<Territory> playerTerrs = new ArrayList<>(attackerLand);
-            rng = rnd.nextInt(playerTerrs.size());
-            attackTerr = playerTerrs.get(rng);
-
-            List<Territory> adjacentTerrs= new ArrayList<>();
-            for (String id : attackTerr.getAdjacentList()) {
-                // Add territory to list of adjacents if found and is not owned by attacker
-                game.findTerritory(id).ifPresent(territory -> {
-                    if (!territory.getOwner().equals(attacker)) adjacentTerrs.add(territory);
-                });
-            }
-
-            rng = rnd.nextInt(adjacentTerrs.size());
-            defendTerr = adjacentTerrs.get(rng);
-
-            int min = 1;
-            int max = Math.min(attackTerr.getNumArmies() - 1, 3);
-            rng = rnd.nextInt(max + 1 - min) + min;
-            armyNum = rng;
-        }
-
 
         JScrollPane ownedScrollPane = new JScrollPane(ownedList, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         JScrollPane adjacentScrollPane = new JScrollPane(adjacentList, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
@@ -129,7 +79,7 @@ public class AttackPanel extends JPanel {
      * @return The territory the player wishes to attack from
      */
     public Territory getAttackingTerritory() {
-        return attackTerr;
+        return ownedList.getSelectedValue();
     }
 
     /**
@@ -137,11 +87,7 @@ public class AttackPanel extends JPanel {
      * @return The territory to attack
      */
     public Territory getDefendingTerritory() {
-        if (adjacentList.isSelectionEmpty()){
-            return defendTerr;
-        }else{
-            return adjacentList.getSelectedValue();
-        }
+        return adjacentList.getSelectedValue();
     }
 
     /**
@@ -150,7 +96,7 @@ public class AttackPanel extends JPanel {
      */
     public int getArmyNum() {
         if (!armySlider.isEnabled()){
-            return armyNum;
+            return armySlider.getMaximum();
         }else{
             return armySlider.getValue();
         }

@@ -7,11 +7,11 @@
 - Robell Gabriel
 - Jacob Schmidt
 
-## Milestone 2
+## Milestone 3
 
 ### Deliverables
 
-##### riskGroup11-iter2.zip containing:
+##### riskGroup11-iter3.zip containing:
 - risk.jar - executable
 - class_diagram.png - UML Class diagram
 - source code folder - Complete source code with unit tests
@@ -20,15 +20,16 @@
 ### Changes
 
 #### Nicolas:
-- Implemented attack GUI elements, AttackPanel, and ArmySelectPanel
+- Refactored View classes
  
-#### Phuc and Robell:
-- Implemented main Game GUI elements, WelcomePanel, PlayerNamePanel, and PlacePanel
-- Maintain list of territories displayed on main screen
+### Phuc:
+- Began working on Game state and map serialization (see issue #27 on Github)
+
+#### Robell:
+- Implemented AI Player logic
 
 #### Jacob:
-- Implemented move phase GUI elements and MovePanel
-- Split Game class into MVC
+- Refactored Model classes
 
 ### Known Issues
 
@@ -36,6 +37,6 @@
 
 ### Roadmap
 
-- Add more options to Game initialization (specify number of AI players)
-- Get started on an AI player, looking into expected utility
-- Look into map and game state serialization
+- Implement custom game maps
+- Save game state to file
+- Load saved game state from file

@@ -117,6 +117,41 @@ public class Player {
     }
 
     /**
+     * Get a list containing all owned territories with an enemy adjacent
+     * @param gameState the game that is used to search for territories by id string from listTerritories
+     * @return List containing all matching territories
+     */
+    public List<Territory> getLandWithAdjacentEnemy(Game gameState) {
+        return getLandWithAdjacentAllyOrEnemy(gameState, false);
+    }
+
+    /**
+     * Get a list containing all owned territories with a friendly adjacent
+     * @param gameState the game that is used to search for territories by id string from listTerritories
+     * @return List containing all matching territories
+     */
+    public List<Territory> getLandWithAdjacentAlly(Game gameState) {
+        return getLandWithAdjacentAllyOrEnemy(gameState, true);
+    }
+
+    private List<Territory> getLandWithAdjacentAllyOrEnemy(Game gameState, boolean withAlly) {
+        List<Territory> output = new ArrayList<>();
+        for (Territory terr : ownedlands) {
+            List<String> adjacent = terr.getAdjacentList();
+            boolean foundValidAdjacent = false;
+            for (int i = 0; !foundValidAdjacent && i < adjacent.size(); i++) {
+                Optional<Territory> territory = gameState.findTerritory(adjacent.get(i));
+                if (territory.isPresent() && (territory.get().getOwner() == this) == withAlly) {
+                    output.add(terr);
+                    foundValidAdjacent = true;
+                }
+            }
+        }
+        output.sort(Comparator.comparing(Territory::getId));
+        return output;
+    }
+
+    /**
      * checks if player is an AI
      * @return true if player name represents AI, false otherwise
      */

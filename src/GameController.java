@@ -13,7 +13,7 @@ import javax.swing.*;
 public class GameController implements ActionListener {
     private final Game game;
     private final GameView gameView;
-    private final String[] options = {"OK"};
+    public static final String[] options = {"OK"};
 
     /**
      * constructor for gameController class
@@ -35,7 +35,6 @@ public class GameController implements ActionListener {
         JButton button = (JButton) o;
         Player player = game.getCurrentPlayer();
 
-        Random rnd = new Random();
         //if place button is pressed pull up a PlacePanel to get input from user and update model accordingly
         switch (button.getText()) {
             case "Place": {
@@ -142,7 +141,7 @@ public class GameController implements ActionListener {
      * @param defending Territory owned by defending player
      * @return int the amount of armies User/AI wants to defend territory with
      */
-    public int AIOrUserDefendArmies(Territory defending){
+    public static int AIOrUserDefendArmies(Territory defending) {
         //opens up panels if player defending territory isn't an AI
         if (!defending.getOwner().isAI()){
             ArmySelectPanel dp = new ArmySelectPanel(1, defending.getNumArmies() > 1 ? 2 : 1);
@@ -150,7 +149,7 @@ public class GameController implements ActionListener {
 
             while (result == JOptionPane.CLOSED_OPTION) {
                 result = JOptionPane.showOptionDialog(
-                        gameView,
+                        null,
                         dp,
                         defending.getOwner().getName()+", select a number of armies to defend!",
                         JOptionPane.OK_CANCEL_OPTION,
@@ -164,9 +163,7 @@ public class GameController implements ActionListener {
         }else{
             //defend with random amount of armies for AI
             Random rnd = new Random();
-            int min = 1;
-            int max = defending.getNumArmies() > 1 ? 2 : 1;
-            return rnd.nextInt(max + 1 - min) + min;
+            return rnd.nextInt(Math.min(2, defending.getNumArmies())) + 1;
         }
     }
 }

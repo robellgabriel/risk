@@ -1,8 +1,6 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * This class create a JPanel asking the players for their names
@@ -11,18 +9,17 @@ import java.util.Map;
  */
 public class PlayerNamePanel extends JPanel {
     private final JTextField name;
-    private JCheckBox AIPlayer;
+    private final JCheckBox AIPlayer;
 
     /**
      * Constructor for PlayerNamePanel asking player's name
      * @param i int looping for each player
      */
     public PlayerNamePanel(int i) {
-
         name = new JTextField("Name here",10);
         AIPlayer = new JCheckBox("AI Player");
 
-        JLabel askName = new JLabel("Enter Player " + (i+1) + " name: ");
+        JLabel askName = new JLabel("Enter Player " + (i + 1) + " name: ");
         name.addFocusListener(new FocusListener() {
             @Override
             public void focusGained(FocusEvent e) {
@@ -37,10 +34,10 @@ public class PlayerNamePanel extends JPanel {
         });
 
         AIPlayer.addActionListener(e -> {
-            if (AIPlayer.isSelected()){
-                name.setText("AI Player " + (i+1));
+            if (AIPlayer.isSelected()) {
+                name.setText("AI Player " + (i + 1));
                 name.setEditable(false);
-            }else{
+            } else {
                 name.setText("Name here");
                 name.setEditable(true);
             }
@@ -62,9 +59,9 @@ public class PlayerNamePanel extends JPanel {
 
     /**
      * checks if the player is an AI
-     * @return true if AIPlayer checkbox is checked, false otherwiser
+     * @return true if AIPlayer checkbox is checked, false otherwise
      */
-    public boolean isAI(){
+    public boolean isAI() {
         return AIPlayer.isSelected();
     }
 }

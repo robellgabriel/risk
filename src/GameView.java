@@ -3,7 +3,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * The GameView for the GUI component of the game Risk, handles the graphical representation of the GameModel.
@@ -35,43 +34,40 @@ public class GameView extends JFrame {
             result = JOptionPane.showOptionDialog(this, wp, "Welcome",
                     JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
                     null, options, options[0]);
-        }
-        while (result == JOptionPane.CLOSED_OPTION );
+        } while (result == JOptionPane.CLOSED_OPTION);
         int numPlayers = wp.getPlayerCount();
 
         //PlayerName panel of risk game
         Map<String, Boolean> playerNames = new HashMap<>();
-        boolean continueLoop = false;
-        for (int i = 0; i < numPlayers; i++) {
-            PlayerNamePanel pmp = new PlayerNamePanel(i);
+        boolean validInput = true;
+        for (int i = 0; i < numPlayers; validInput = true) {
+            PlayerNamePanel pnp = new PlayerNamePanel(i);
             do {
                 result = JOptionPane.showOptionDialog(
-                        this, pmp, "Player Names",
+                        this, pnp, "Player Names",
                         JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
                         null, options, options[0]);
 
                 //checks if name is already used
-                for (String nameCheck : playerNames.keySet()){
-                    if (nameCheck.toLowerCase().equals(pmp.getPlayerName().toLowerCase())){
-                        continueLoop = true;
-                        JOptionPane.showMessageDialog(pmp,"Name is already used");
+                for (String nameCheck : playerNames.keySet()) {
+                    if (nameCheck.toLowerCase().equals(pnp.getPlayerName().toLowerCase())) {
+                        validInput = false;
+                        JOptionPane.showMessageDialog(pnp,"Name is already used");
                         break;
                     }
                 }
 
-                //checks if name is too long
-                if (pmp.getPlayerName().length() > 15){
-                    continueLoop = true;
-                    JOptionPane.showMessageDialog(pmp,"Name is too long (15 characters max)");
+                //checks if name is too long if name was not already used
+                if (validInput && pnp.getPlayerName().length() > 15) {
+                    validInput = false;
+                    JOptionPane.showMessageDialog(pnp,"Name is too long (15 characters max)");
                 }
-            } while (result == JOptionPane.CLOSED_OPTION || pmp.getPlayerName().isBlank() || pmp.getPlayerName().equals("Name here"));
+            } while (result == JOptionPane.CLOSED_OPTION || pnp.getPlayerName().isBlank() || pnp.getPlayerName().equals("Name here"));
 
-            if (continueLoop){
-                continueLoop=false;
-                i--;
-                continue;
+            if (validInput) {
+                i++;
+                playerNames.put(pnp.getPlayerName(), pnp.isAI());
             }
-            playerNames.put(pmp.getPlayerName(),pmp.isAI());
         }
 
         Game game  = new Game();
@@ -168,7 +164,7 @@ public class GameView extends JFrame {
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         if (game.getCurrentPlayer().isAI()){
-            game.AITurn(17,20, this);
+            game.AITurn();
         }
     }
 
@@ -185,7 +181,7 @@ public class GameView extends JFrame {
     public void updateView(String calledBy, Map<String, Continent> continents, Player currentPlayer, List<Player> activePlayers) {
         switch (calledBy) {
             case "Place":
-                resetMap(mapList, map, continents);
+                resetMap(continents);
                 place.setEnabled(false);
                 attack.setEnabled(true);
                 move.setEnabled(true);
@@ -193,8 +189,7 @@ public class GameView extends JFrame {
                 break;
 
             case "Move":
-                resetMap(mapList, map, continents);
-                playerTurn.setText("It is " + currentPlayer.getName() + "'s turn: ");
+                resetMap(continents);
                 place.setEnabled(true);
                 attack.setEnabled(false);
                 move.setEnabled(false);
@@ -202,7 +197,7 @@ public class GameView extends JFrame {
                 break;
 
             case "Attack":
-                resetMap(mapList, map, continents);
+                resetMap(continents);
                 leaderBoardList.removeAllElements();
                 List<Player> sortedPlayer = new ArrayList<>(activePlayers);
                 sortedPlayer.sort(Comparator.comparing(Player::getAllLandOwnedSize).reversed());
@@ -213,10 +208,7 @@ public class GameView extends JFrame {
                     JOptionPane.showOptionDialog(this, "Congratulations " + currentPlayer.getName() + ". You are the winner!!!", "Winner",
                                                 JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
                                                 null, options, options[0]);
-                    place.setEnabled(false);
-                    attack.setEnabled(false);
-                    move.setEnabled(false);
-                    done.setEnabled(false);
+                    disableButtons();
                 }
                 break;
 
@@ -234,16 +226,21 @@ public class GameView extends JFrame {
         new GameView();
     }
 
+    private void disableButtons() {
+        place.setEnabled(false);
+        attack.setEnabled(false);
+        move.setEnabled(false);
+        done.setEnabled(false);
+    }
+
     /**
      * Updates the map as the game progresses (IE: attack/move territories losing/gaining armies)
      *
-     * @param mapList TreeNode containing all territories categorized by corresponding continent
-     * @param map     JTree contain mapList of territory view for main menu
      * @param continents a list of continents on the map
      *
      * @author Robell Gabriel and Phuc La
      */
-    public void resetMap(DefaultMutableTreeNode mapList, JTree map, Map<String, Continent> continents) {
+    public void resetMap(Map<String, Continent> continents) {
         mapList.removeAllChildren();
         for (String id : continents.keySet()) {
             DefaultMutableTreeNode contList = new DefaultMutableTreeNode(continents.get(id).getName());
