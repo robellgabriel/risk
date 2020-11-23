@@ -92,17 +92,17 @@ public class Game {
     /**
      * completes logic for one territory attacking another and updates the view accordingly
      *
-     * @param armyNum and int that represents the amount of armies to attack with
      * @param attacking a territory that is attacking the territory defending
+     * @param attackArmy and int that represents the amount of armies to attack with
      * @param defending a territory that is defending the territory attacking
      * @param defendArmy an int that represents the amount of armies to defend with
      * @return a boolean representing whether the attacker takes over the territory
      *
      * @author Nicolas Tuttle
      */
-    public boolean attack(int armyNum, Territory attacking, Territory defending, int defendArmy) {
+    public boolean attack(Territory attacking, int attackArmy, Territory defending, int defendArmy) {
         status = Status.ATTACK;
-        LinkedList<Integer> attackRolls = rollDice(armyNum);
+        LinkedList<Integer> attackRolls = rollDice(attackArmy);
         LinkedList<Integer> defendRolls = rollDice(defendArmy);
 
         // Sort to find highest pairs
@@ -471,7 +471,7 @@ public class Game {
                 int attackArmyNum = rnd.nextInt(max) + 1;
                 int defendArmyNum = GameController.AIOrUserDefendArmies(defending);
 
-                if (attack(attackArmyNum, attacking, defending, defendArmyNum)) {
+                if (attack(attacking, attackArmyNum, defending, defendArmyNum)) {
                     // Transfer random amount of armies for AI
                     int transferNum = rnd.nextInt(attacking.getNumArmies() - attackArmyNum) + attackArmyNum;
                     if (attackWon(attacking, defending, transferNum)){

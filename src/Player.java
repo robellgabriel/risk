@@ -16,6 +16,7 @@ public class Player {
     /**
      * Constructor for the player that will play the game
      * @param name is the name that the player will use in the game
+     * @param AI true if the player is AI, false otherwise
      */
     public Player(String name, boolean AI) {
         this.name = name;

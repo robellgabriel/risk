@@ -56,7 +56,7 @@ public class GameController implements ActionListener {
             }
             //if move button is pressed pull up a movePanel to get input from user and update model accordingly
             case "Move": {
-                MovePanel test = new MovePanel(player, game);
+                MovePanel mp = new MovePanel(player, game);
                 int result = JOptionPane.CLOSED_OPTION;
 
                 while (
@@ -64,25 +64,25 @@ public class GameController implements ActionListener {
                         result == JOptionPane.CLOSED_OPTION
                                 || (
                                 result == JOptionPane.OK_OPTION
-                                        && (test.getMoveTo() == null
-                                        || test.getMoveFrom() == null)
+                                        && (mp.getMoveTo() == null
+                                        || mp.getMoveFrom() == null)
                         )
                 ) {
                     result = JOptionPane.showConfirmDialog(
                             gameView,
-                            test,
+                            mp,
                             "Select a territory to move from!",
                             JOptionPane.OK_CANCEL_OPTION
                     );
                 }
                 if (result != JOptionPane.CANCEL_OPTION) {
-                    game.movePhase(test.getArmiesToMove(), test.getMoveFrom(), test.getMoveTo());
+                    game.movePhase(mp.getArmiesToMove(), mp.getMoveFrom(), mp.getMoveTo());
                 }
                 break;
             }
             //if attack button is pressed pull up a AttackPanel to get input from user and update model accordingly
             case "Attack": {
-                AttackPanel test = new AttackPanel(player, game);
+                AttackPanel ap = new AttackPanel(player, game);
                 int result = JOptionPane.CLOSED_OPTION;
 
                 while (
@@ -90,27 +90,27 @@ public class GameController implements ActionListener {
                         result == JOptionPane.CLOSED_OPTION
                                 || (
                                 result == JOptionPane.OK_OPTION
-                                        && (test.getAttackingTerritory() == null
-                                        || test.getDefendingTerritory() == null)
+                                        && (ap.getAttackingTerritory() == null
+                                        || ap.getDefendingTerritory() == null)
                         )
                 ) {
                     result = JOptionPane.showConfirmDialog(
                             gameView,
-                            test,
+                            ap,
                             "Select a territory to attack from!",
                             JOptionPane.OK_CANCEL_OPTION
                     );
                 }
                 if (result != JOptionPane.CANCEL_OPTION) {
-                    Territory defending = test.getDefendingTerritory();
-                    Territory attacking = test.getAttackingTerritory();
+                    Territory defending = ap.getDefendingTerritory();
+                    Territory attacking = ap.getAttackingTerritory();
 
                     int armyNum = AIOrUserDefendArmies(defending);
 
-                    boolean won = game.attack(test.getArmyNum(), attacking, defending, armyNum);
+                    boolean won = game.attack(attacking, ap.getArmyNum(), defending, armyNum);
                     if (won) {
                         result = JOptionPane.CLOSED_OPTION;
-                        ArmySelectPanel transfer = new ArmySelectPanel(test.getArmyNum(), attacking.getNumArmies() - 1);
+                        ArmySelectPanel transfer = new ArmySelectPanel(ap.getArmyNum(), attacking.getNumArmies() - 1);
 
                         while (result == JOptionPane.CLOSED_OPTION) {
                             result = JOptionPane.showOptionDialog(

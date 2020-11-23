@@ -1,6 +1,3 @@
-import java.util.List;
-import java.util.Map;
-
 /**
  * interface for GameView includes two methods one to update the buttons and maps
  * and one to print text
