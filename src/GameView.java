@@ -1,7 +1,8 @@
 /**
  * interface for GameView includes two methods one to update the buttons and maps
  * and one to print text
- * @author thor Jacob Schmidt
+ *
+ * @author Jacob Schmidt
  */
 public interface GameView {
     /**

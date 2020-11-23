@@ -4,6 +4,7 @@ import java.util.stream.Collectors;
 
 /**
  * This program creates a JPanel to model how a move phase in risk would look like
+ *
  * @author Jacob Schmidt
  */
 public class MovePanel extends JPanel {

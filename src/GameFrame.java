@@ -228,7 +228,7 @@ public class GameFrame extends JFrame implements GameView{
      *
      * @author Robell Gabriel and Phuc La
      */
-    public void resetMap(Map<String, Continent> continents) {
+    private void resetMap(Map<String, Continent> continents) {
         mapList.removeAllChildren();
         for (String id : continents.keySet()) {
             DefaultMutableTreeNode contList = new DefaultMutableTreeNode(continents.get(id).getName());
@@ -245,6 +245,15 @@ public class GameFrame extends JFrame implements GameView{
         }
     }
 
+    /**
+     * Updates the leaderboard as the game progresses (IE: attack territory and conquer the land)
+     * Checks if there's a winner
+     *
+     * @param activePlayers list of all players in game
+     * @param currentPlayer Player object of current player's turn
+     *
+     * @author Robell Gabriel
+     */
     private void handleAttack(List<Player> activePlayers,Player currentPlayer){
         leaderBoardList.removeAllElements();
         List<Player> sortedPlayer = new ArrayList<>(activePlayers);

@@ -13,7 +13,7 @@
 
 ##### riskGroup11-iter3.zip containing:
 - risk.jar - executable
-- class_diagram.png - UML Class diagram
+- UML folder - All class diagrams and sequence diagrams
 - source code folder - Complete source code with unit tests
 - documentation folder - Complete documentation including Javadoc and user manuals
 

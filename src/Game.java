@@ -373,6 +373,7 @@ public class Game {
      * @param i           int used to loop between players
      * @param armyList2   Stack of randomly distributed armies
      * @param territoryID Stack of valid territory ids
+     *
      * @author Robell Gabriel
      */
     private void initializePlayer(int numArmies, int numOfTerr, int i, Stack<String> territoryID, Stack<Integer> armyList2) {
