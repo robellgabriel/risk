@@ -168,17 +168,14 @@ public class GameFrame extends JFrame implements GameView{
         }
     }
 
-    @Override
     /**
      * Updates the view based on which method from the game model has called the update
      *
-     * @param calledBy is a string that contains information on which method updated the view
-     * @param continents is a list that contains all the continents
-     * @param currentPlayer a Player representing who's turn it currently is
-     * @param activePlayers a list of Players that are active in the game
+     * @param game The game state
      *
      * @author Phuc La and Robell Gabriel
      */
+    @Override
     public void updateView(Game game) {
        Map <String,Continent>  continents = game.getContinents();
        Player currentPlayer = game.getCurrentPlayer();
@@ -247,6 +244,7 @@ public class GameFrame extends JFrame implements GameView{
             map.expandRow(i);
         }
     }
+
     private void handleAttack(List<Player> activePlayers,Player currentPlayer){
         leaderBoardList.removeAllElements();
         List<Player> sortedPlayer = new ArrayList<>(activePlayers);
@@ -261,7 +259,7 @@ public class GameFrame extends JFrame implements GameView{
             disableButtons();
         }
     }
-    @Override
+
     /**
      * Prints a line to the action log
      *
@@ -269,6 +267,7 @@ public class GameFrame extends JFrame implements GameView{
      *
      * @author Nicolas Tuttle
      */
+    @Override
     public void printLine(String str) {
         actionLog.append(str + "\n");
         actionLog.setCaretPosition(actionLog.getDocument().getLength());

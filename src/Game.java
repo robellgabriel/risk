@@ -14,10 +14,23 @@ public class Game {
     private final ArrayList<GameView> gameViews;
     private boolean isFirstTurn;
 
-    public enum Status {ATTACK,PLACE,DISABLE,DONE, PASS}
+    public enum Status {ATTACK, PLACE, DISABLE, DONE, PASS}
     private Status status = Status.PLACE;
+
+    /**
+     * The threshold at which the AI will switch from attack to move phase
+     * AI_THRESHOLD must be between 0 and AI_MAX - 1, inclusive
+     *
+     * Probabilities:
+     * Attack = AI_THRESHOLD / AI_MAX
+     * Done = 1 / AI_MAX
+     * Move = (AI_MAX - AI_THRESHOLD - 1) / AI_MAX
+     */
     public static final int AI_THRESHOLD = 16;
 
+    /**
+     * The number of outcomes the AI RNG can select from
+     */
     public static final int AI_MAX = 20;
 
     /**
