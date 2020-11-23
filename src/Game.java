@@ -14,20 +14,10 @@ public class Game {
     private final ArrayList<GameView> gameViews;
     private boolean isFirstTurn;
 
-    /**
-     * The threshold at which the AI will switch from attack to move phase
-     * AI_THRESHOLD must be between 0 and AI_MAX - 1, inclusive
-     *
-     * Probabilities:
-     * Attack = AI_THRESHOLD / AI_MAX
-     * Done = 1 / AI_MAX
-     * Move = (AI_MAX - AI_THRESHOLD - 1) / AI_MAX
-     */
-    public static final int AI_THRESHOLD = 17;
+    public enum Status {ATTACK,PLACE,DISABLE,DONE, PASS}
+    private Status status = Status.PLACE;
+    public static final int AI_THRESHOLD = 16;
 
-    /**
-     * The number of outcomes the AI RNG can select from
-     */
     public static final int AI_MAX = 20;
 
     /**
@@ -49,6 +39,7 @@ public class Game {
      * @author Robell Gabriel and Phuc La
      */
     public void placePhase(Map<String, Integer> mt) {
+        status = Status.PLACE;
         for (String tid : mt.keySet()) {
             findTerritory(tid).ifPresent(territory -> {
                 territory.addArmy(mt.get(tid));
@@ -57,7 +48,7 @@ public class Game {
             });
 
         }
-        updateView("Place");
+        updateView();
     }
 
     /**
@@ -70,6 +61,7 @@ public class Game {
      * @author Jacob Schmidt
      */
     public void movePhase(int i, Territory toRemove, Territory toPlace) {
+
         if (toRemove.removeArmy(i)) {
             toPlace.addArmy(i);
             printLine(toRemove.getOwner().getName()+" has moved " + i + " armies from " + toRemove.getName() + " to " + toPlace.getName());
@@ -77,7 +69,6 @@ public class Game {
         } else {
             printLine("some how u messed up tough luck");
         }
-        updateView("Move");
         if (isFirstTurn && currentPlayer.isAI()) {
             done();
         } else {
@@ -97,6 +88,7 @@ public class Game {
      * @author Nicolas Tuttle
      */
     public boolean attack(int armyNum, Territory attacking, Territory defending, int defendArmy) {
+        status = Status.ATTACK;
         LinkedList<Integer> attackRolls = rollDice(armyNum);
         LinkedList<Integer> defendRolls = rollDice(defendArmy);
 
@@ -128,7 +120,7 @@ public class Game {
 
             printLine("The attacking territory lost " + attackLosses + " unit(s)! It has " + attacking.getNumArmies() + " unit(s) left.");
             printLine("The defending territory lost " + defendLosses + " unit(s)! It has " + defending.getNumArmies() + " unit(s) left.\n");
-            updateView("Attack");
+            updateView();
             return false;
         } else {
             return true;
@@ -146,6 +138,8 @@ public class Game {
      * @author Nicolas Tuttle
      */
     public boolean attackWon(Territory attacking, Territory defending, int armyNum) {
+        status = Status.ATTACK;
+
         Player defendingPlayer = defending.getOwner();
 
         defending.setPlayer(currentPlayer);
@@ -166,11 +160,11 @@ public class Game {
             printLine(defendingPlayer.getName() + " has lost all their territories! They have been eliminated.\n");
             activePlayers.remove(defendingPlayer);
             if (activePlayers.size()==1){
-                updateView("Attack");
+                updateView();
                 return true;
             }
         }
-        updateView("Attack");
+        updateView();
         return false;
     }
 
@@ -178,6 +172,7 @@ public class Game {
      * Initiates AI turn if necessary
      */
     public void done() {
+
         isFirstTurn = false;
         passTurn();
         while (currentPlayer.isAI() && activePlayers.size() > 1) {
@@ -189,9 +184,10 @@ public class Game {
      * moves the turn over to the next player
      */
     private void passTurn() {
+        status = Status.DONE;
         printLine(currentPlayer.getName() + " has ended their turn\n");
         currentPlayer = activePlayers.get((activePlayers.indexOf(currentPlayer) + 1) % activePlayers.size());
-        updateView("Done");
+        updateView();
     }
 
     /**
@@ -400,7 +396,8 @@ public class Game {
      * being chosen at random based off threshold in max range
      */
     public void AITurn() {
-        updateView("Disable");
+        status = Status.DISABLE;
+        updateView();
         Random rnd = new Random();
 
         // Place phase
@@ -482,11 +479,20 @@ public class Game {
     /**
      * Update all the views with the given code
      * Also calls AI turn if player is an AI
-     * @param code The type of action that was performed
+     *
      */
-    private void updateView(String code){
+    private void updateView(){
         for (GameView gv : gameViews){
-            gv.updateView(code, continents, currentPlayer, activePlayers);
+            if (currentPlayer.isAI() & status != Status.DONE & status != Status.ATTACK) {
+                if (status == Status.DISABLE){
+                    gv.updateView(this);
+                }
+                else {
+                    status = Status.PASS;
+                    gv.updateView(this);
+                }
+            }
+            else gv.updateView(this);
         }
     }
 
@@ -495,8 +501,8 @@ public class Game {
      * @param message The message to print to the action log
      */
     private void printLine(String message) {
-        for (GameView v : gameViews){
-            v.printLine(message);
+        for (GameView gv : gameViews){
+            gv.printLine(message);
         }
     }
 
@@ -506,6 +512,14 @@ public class Game {
      */
     public Player getCurrentPlayer() {
         return currentPlayer;
+    }
+
+    /**
+     * get the status of the game
+     * @return enum Status representing the status of the game
+     */
+    public Status getStatus() {
+        return status;
     }
 
     /**

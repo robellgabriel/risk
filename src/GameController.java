@@ -4,7 +4,7 @@ import java.util.Random;
 import javax.swing.*;
 
 /**
- * The GameController for the GUI component of the game Risk, handles the user inputs which updates the GameModel and GameView.
+ * The GameController for the GUI component of the game Risk, handles the user inputs which updates the GameModel and GameFrame.
  * This class prompts panels for when command buttons are clicked
  *
  * @author Nicolas Tuttle, Phuc La, Robell Gabriel, Jacob Schmidt
@@ -12,7 +12,7 @@ import javax.swing.*;
 
 public class GameController implements ActionListener {
     private final Game game;
-    private final GameView gameView;
+    private final GameFrame gameView;
     public static final String[] options = {"OK"};
 
     /**
@@ -20,7 +20,7 @@ public class GameController implements ActionListener {
      * @param game the game that is controlled by controller
      * @param gameView the view that represents the model that is controlled by this
      */
-    public GameController(Game game,GameView gameView) {
+    public GameController(Game game,GameFrame gameView) {
         this.game = game;
         this.gameView = gameView;
     }
