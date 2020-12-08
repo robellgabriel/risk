@@ -4,10 +4,7 @@ import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.xml.parsers.ParserConfigurationException;
 import java.awt.*;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 import java.util.List;
 
@@ -69,12 +66,11 @@ public class GameFrame extends JFrame implements GameView{
                     if (file.getSelectedFile() == null) {
                         continue;
                     }
-                    game.importCustomMap(file.getSelectedFile().getParent());
+                    game.importCustomMap(file.getSelectedFile().getAbsolutePath());
                     welcomePlayers(game);
                     break;
-                }catch (ParserConfigurationException | SAXException | IOException e){
-                    JOptionPane.showMessageDialog(this, "Custom map is invalid");
-                    e.printStackTrace();
+                } catch (ParserConfigurationException | SAXException | IOException | RuntimeException e){
+                    JOptionPane.showMessageDialog(this, "Custom map is invalid: " + e.getMessage());
                 }
             }
         }
@@ -336,6 +332,11 @@ public class GameFrame extends JFrame implements GameView{
                 playerNames.put(pnp.getPlayerName(), pnp.isAI());
             }
         }
+
+        int territoryCount = game.getContinents().values().stream().mapToInt(Continent::getTerritoriesSize).sum();
+        if (playerNames.size() > territoryCount) {
+            throw new RuntimeException("The map does not have enough territories for all the players.");
+        }
         //Initializer to get number of players, player's name, distribution of territory and armies
         game.initialize(playerNames);
     }
@@ -379,9 +380,5 @@ public class GameFrame extends JFrame implements GameView{
             printLine(act);
         }
         actionLog.append("\n");
-    }
-
-    public JTextArea getActionLog() {
-        return actionLog;
     }
 }

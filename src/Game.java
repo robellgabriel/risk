@@ -1,7 +1,8 @@
 import org.xml.sax.SAXException;
+
+import javax.swing.*;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
-import javax.swing.*;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import java.util.*;
@@ -241,16 +242,23 @@ public class Game implements Serializable {
      * @author Robell Gabriel
      */
     public void initialize(Map<String, Boolean> playerName) {
+        if (continents.isEmpty()) {
+            try {
+                InputStream is = getClass().getResourceAsStream("DefaultMap.xml");
+                if (is != null) {
+                    importCustomMap(is);
+                } else {
+                    importCustomMap("DefaultMap.xml");
+                }
+            } catch (Exception e) {
+                // This should never happen if the DefaultMap file is correct!
+                JOptionPane.showMessageDialog(null, "Critical error. Shutting down." + e.getMessage());
+                System.exit(-1);
+            }
+        }
+
         Stack<String> territoryID = new Stack<>(); //stack of temporary territory IDs
         Stack<Integer> armyList2 = new Stack<>(); //stack of temporary armyList
-
-        try {
-            importCustomMap("src/DefaultMap.xml");
-        } catch (Exception e) {
-            // This should never happen if the DefaultMap file is correct!
-            JOptionPane.showMessageDialog(null, "Critical error. Shutting down." + e.getMessage());
-            System.exit(-1);
-        }
 
         //creates list of temporary Ids for each territory which is shuffled to player's get random territory
         for (String id : continents.keySet()) {
@@ -506,6 +514,22 @@ public class Game implements Serializable {
      */
     public void addGameView(GameView view){
         gameViews.add(view);
+    }
+
+    /**
+     * Import a custom map from an XML file
+     * @param file The XML file with the custom map
+     * @throws ParserConfigurationException If the parser is incorrectly configured
+     * @throws SAXException If the custom map is invalid
+     * @throws IOException If the file cannot be opened
+     */
+    public void importCustomMap(InputStream file) throws ParserConfigurationException, SAXException, IOException {
+        SAXParserFactory spf = SAXParserFactory.newInstance();
+        SAXParser p = spf.newSAXParser();
+
+        CustomMapXMLHandler handler = new CustomMapXMLHandler();
+        p.parse(file, handler);
+        continents = handler.getCustomMap();
     }
 
     /**

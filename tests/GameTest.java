@@ -13,7 +13,7 @@ public class GameTest {
     HashMap<String, Boolean> playerNames;
 
     @Before
-    public void SetUp() {
+    public void SetUp() throws IOException, SAXException, ParserConfigurationException {
         game = new Game();
         playerNames = new HashMap<>();
         playerNames.put("a",false);
