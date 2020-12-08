@@ -2,6 +2,7 @@ import org.junit.*;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.*;
 
@@ -175,7 +176,6 @@ public class GameTest {
     }
 
     @Test
-
     public void testAttackWon() {
         Player player1 = game.getActivePlayers().get(0);
         Player player2 = game.getActivePlayers().get(1);
@@ -211,6 +211,31 @@ public class GameTest {
         assertEquals(defending2.getNumArmies(), 3);
         assertEquals(defending2.getOwner(), player1);
         assertTrue(player1.getAllLandOwned().contains(defending2));
+    }
+
+    /**
+     * Test save and load features for GameModel
+     *
+     * @throws IOException if the GameModelfile is invalid
+     * @throws ClassNotFoundException if adding objects from GameModelfile is invalid
+     * @throws FileNotFoundException if game file doesnt exist
+     *
+     * @author Robell Gabriel
+     */
+    @Test
+    public void saveEqualsLoadGame() throws IOException, ClassNotFoundException, FileNotFoundException {
+        Game gSave = new Game();
+        Game gLoad = new Game();
+
+        Map<String, Boolean> playerNames = new HashMap<>();
+        playerNames.put("a",false);
+        playerNames.put("b",false);
+        gSave.initialize(playerNames);
+
+        gSave.saveGame();
+        gLoad.loadGame();
+
+        assertEquals(gSave, gLoad);
     }
 
     /**

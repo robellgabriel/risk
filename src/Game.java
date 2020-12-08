@@ -1,10 +1,9 @@
 import org.xml.sax.SAXException;
-
-import javax.swing.*;
 import javax.xml.parsers.ParserConfigurationException;
+import java.io.*;
+import javax.swing.*;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -14,12 +13,12 @@ import java.util.stream.Collectors;
  *
  * @author Nicolas Tuttle, Phuc La, Robell Gabriel, Jacob Schmidt
  */
-public class Game {
-    private final List<Player> activePlayers;
+
+public class Game implements Serializable {
+    private List<Player> activePlayers;
     private Map<String, Continent> continents;
     private Player currentPlayer;
     private final ArrayList<GameView> gameViews;
-    private boolean isFirstTurn;
 
     public enum Status {ATTACK, PLACE, DISABLE, DONE, PASS}
     private Status status = Status.PLACE;
@@ -47,7 +46,6 @@ public class Game {
         activePlayers = new LinkedList<>();
         continents = new HashMap<>();
         gameViews = new ArrayList<>();
-        isFirstTurn = true;
     }
 
     /**
@@ -190,7 +188,6 @@ public class Game {
      */
     public void done() {
         status = Status.DONE;
-        isFirstTurn = false;
         printLine(currentPlayer.getName() + " has ended their turn\n");
         currentPlayer = activePlayers.get((activePlayers.indexOf(currentPlayer) + 1) % activePlayers.size());
         updateView();
@@ -418,6 +415,34 @@ public class Game {
     }
 
     /**
+     * Saves current game state into a file
+     *
+     * @throws IOException if file cannot save
+     */
+    public void saveGame() throws IOException {
+        FileOutputStream gameSaveFile = new FileOutputStream("RISK.sav");
+        ObjectOutputStream risk = new ObjectOutputStream(gameSaveFile);
+        risk.writeObject(this);
+        risk.close();
+        gameSaveFile.close();
+    }
+
+    /**
+     * Loads a saved game state from a file into current game/new game
+     *
+     * @throws IOException if file cannot load
+     * @throws ClassNotFoundException if file's object cannot be added
+     */
+    public void loadGame() throws IOException, ClassNotFoundException {
+        FileInputStream gameFile = new FileInputStream("RISK.sav");
+        ObjectInputStream gameObjin = new ObjectInputStream(gameFile);
+        Game risk = (Game) gameObjin.readObject();
+        currentPlayer = risk.getCurrentPlayer();
+        activePlayers = risk.getActivePlayers();
+        continents = risk.getContinents();
+    }
+
+    /**
      * Update all the views with the given code
      * Also calls AI turn if player is an AI
      *
@@ -498,4 +523,14 @@ public class Game {
         p.parse(filename, handler);
         continents = handler.getCustomMap();
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof Game)) {
+            return false;
+        }
+        Game g = (Game)o;
+        return g.activePlayers.equals(this.activePlayers);
+    }
+
 }
