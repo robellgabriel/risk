@@ -1,5 +1,8 @@
 import org.junit.*;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
 import java.util.*;
 
 import static org.junit.Assert.*;
@@ -218,5 +221,43 @@ public class GameTest {
         assertEquals(defending2.getNumArmies(), 3);
         assertEquals(defending2.getOwner(), player1);
         assertTrue(player1.getAllLandOwned().contains(defending2));
+    }
+
+    /**
+     * Test importing a custom map.
+     * @throws IOException If the file cannot be read
+     * @throws SAXException If the file is improperly formatted
+     * @throws ParserConfigurationException If the parser is incorrectly configured
+     * @author Nicolas Tuttle
+     */
+    @Test
+    public void testImportValidMap() throws IOException, SAXException, ParserConfigurationException {
+        HashMap<String, Continent> expectedContinents = new HashMap<>();
+        expectedContinents.put("NA", new Continent(
+                "North America",
+                List.of(
+                        new Territory("Eastern United States", "NA1", List.of("NA2", "NA3", "NA4")),
+                        new Territory("Western United States", "NA2", List.of("NA1", "NA3", "NA4")),
+                        new Territory("Northern United States", "NA3", List.of("NA2")),
+                        new Territory("Southern United States", "NA4", List.of("NA2"))
+                ),
+                4
+        ));
+        Game game = new Game();
+        game.importCustomMap("tests/validCustomMap.xml");
+        assertEquals(expectedContinents, game.getContinents());
+    }
+
+    /**
+     * Test importing an invalid custom map.
+     * @throws IOException If the file cannot be read
+     * @throws SAXException Should throw this as the file is invalid
+     * @throws ParserConfigurationException If the parser is incorrectly configured
+     * @author Nicolas Tuttle
+     */
+    @Test(expected = SAXException.class)
+    public void testImportInvalidMap() throws IOException, SAXException, ParserConfigurationException {
+        Game game = new Game();
+        game.importCustomMap("tests/invalidCustomMap.xml");
     }
 }
