@@ -334,7 +334,7 @@ public class GameFrame extends JFrame implements GameView{
         }
 
         int territoryCount = game.getContinents().values().stream().mapToInt(Continent::getTerritoriesSize).sum();
-        if (playerNames.size() > territoryCount) {
+        if (playerNames.size() > territoryCount && territoryCount != 0) {
             throw new RuntimeException("The map does not have enough territories for all the players.");
         }
         //Initializer to get number of players, player's name, distribution of territory and armies
